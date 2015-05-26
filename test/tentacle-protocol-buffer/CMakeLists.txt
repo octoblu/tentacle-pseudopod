@@ -18,5 +18,5 @@ target_link_libraries(tentacleProtocolBufferSpec
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
-add_dependencies(tentacleProtocolBufferSpec gtest )
+add_dependencies(tentacleProtocolBufferSpec tentacleProtocolBuffer gtest )
 add_test(tentacleProtolBuffer tentacleProtocolBufferSpec)

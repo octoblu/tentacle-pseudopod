@@ -4,11 +4,12 @@
 #include "arduino-mock/Serial.h"
 
 #define TOTAL_PINS 8
-#include "../../src/tentacle-protocol-buffer.cpp"
+#include "tentacle-protocol-buffer.hpp"
 
 using ::testing::Return;
 using namespace tentacle;
 
-TEST(TentacleProtoBufTest, Constructor) {
-  TentacleProtoBuf tentacleProtoBuf(1);
+TEST(TentacleProtoBufTest, getStateMessage_1) {
+  Tentacle tentacle;
+  TentacleProtoBuf::getStateMessage(tentacle);
 }
