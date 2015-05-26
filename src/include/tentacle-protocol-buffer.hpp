@@ -1,6 +1,9 @@
+#include "microblu.pb.h"
+#include "tentacle.hpp"
+
 namespace tentacle {
   class TentacleProtoBuf {
   public:
-    TentacleProtoBuf(int wow);
+    _MicrobluState getStateMessage(Tentacle tentacle);
   };
 }

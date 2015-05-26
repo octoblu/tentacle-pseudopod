@@ -5,8 +5,6 @@
 
 #define TOTAL_PINS 8
 #include "../../src/tentacle-protocol-buffer.cpp"
-// #include "../../src/tentacle.cpp"
-
 
 using ::testing::Return;
 using namespace tentacle;
