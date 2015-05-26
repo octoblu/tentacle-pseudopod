@@ -1,15 +1,4 @@
-cmake_minimum_required(VERSION 2.8.8)
-
-message ("building tentacle-protocol-buffers")
-
-file(GLOB SRC
-    "*.hpp"
-    "*.cpp"
-)
-
-include_directories(
-  ${TENTACLE_INCLUDE_DIRS}
-  include
-)
+message ("building the TERRIFYING TENTACLE")
 
 file(GLOB SRCS *.cpp *.hpp)
+include_directories(include)
