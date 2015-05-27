@@ -4,7 +4,7 @@
 #include "arduino-mock/Serial.h"
 
 #define TOTAL_PINS 8
-#include "tentacle-protocol-buffer.hpp"
+#include "../../tentacle-protocol-buffer.cpp"
 
 using ::testing::Return;
 using namespace tentacle;

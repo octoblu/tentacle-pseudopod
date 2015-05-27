@@ -7,5 +7,5 @@ ExternalProject_Add(tentacle
 
 # Specify include dir
 ExternalProject_Get_Property(tentacle source_dir)
-add_library (libtentacle ${source_dir}/src/tentacle.cpp)
-target_include_directories (libtentacle PUBLIC libtentacle ${source_dir}/src/include)
+set(TENTACLE_INCLUDE_DIRS ${source_dir} PARENT_SCOPE)
+message("--------------> tentacle stuff is in ${TENTACLE_INCLUDE_DIRS}")

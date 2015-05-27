@@ -1,4 +1,4 @@
-#include "microblu.pb.h"
+#include "protocols/microblu.pb.h"
 #include "tentacle.hpp"
 
 namespace tentacle {

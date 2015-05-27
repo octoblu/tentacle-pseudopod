@@ -1,0 +1,8 @@
+message MicrobluState {
+  repeated Pin pin = 1;
+}
+
+message Pin {
+  required uint32 pinNumber = 1;
+  required uint32 value = 2;
+}
