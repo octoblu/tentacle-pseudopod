@@ -13,10 +13,6 @@ file(GLOB SRCS *.cpp *.hpp)
 add_executable(tentacleProtoBufSpec ${SRCS})
 
 
-# get_property(GMOCK_INCLUDE_DIRS GLOBAL PROPERTY GMOCK_INCLUDE_DIRS)
-# get_property(GTEST_INCLUDE_DIRS GLOBAL PROPERTY GTEST_INCLUDE_DIRS)
-
-# message("tentacle build files are: ${TENTACLE_PROTO_BUF_LIBS_INIT}")
 message("tentacle header files are: ${TENTACLE_INCLUDE_DIRS}")
 target_link_libraries(tentacleProtoBufSpec
     tentacleProtoBuf

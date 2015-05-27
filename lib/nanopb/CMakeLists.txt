@@ -1,0 +1,5 @@
+# cmake_minimum_required(VERSION 2.8.8)
+project(nanopb C)
+file(GLOB sources "*.c")
+message("I am a big boy and found ${sources}")
+add_library(nanopb ${sources})
