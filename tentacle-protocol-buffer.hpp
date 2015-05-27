@@ -5,6 +5,6 @@ namespace tentacle {
   class TentacleProtoBuf {
 ;
   public:
-    static _MicrobluState getStateMessage(Tentacle tentacle);
+    static MicrobluState getStateMessage(Tentacle tentacle);
   };
 }
