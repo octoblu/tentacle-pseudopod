@@ -14,9 +14,5 @@ set(TENTACLE_INCLUDE_DIRS ${source_dir}/include PARENT_SCOPE)
 set_property(GLOBAL PROPERTY TENTACLE_INCLUDE_DIRS ${source_dir})
 
 ExternalProject_Get_Property(tentacle install_dir)
-#get_property(ARDUINO_MOCK_INCLUDE_DIRS GLOBAL PROPERTY ARDUINO_MOCK_INCLUDE_DIRS)
-#ExternalProject_Get_Property(ARDUINO_MOCK_INCLUDE_DIRS ARDUINO_MOCK_INCLUDE_DIRS)
-message("Wow I have a install_dir of ${install_dir}")
-# Specify MainTest's link libraries
 ExternalProject_Get_Property(tentacle binary_dir)
 set_property(GLOBAL PROPERTY TENTACLE_LIBS_DIR ${binary_dir})

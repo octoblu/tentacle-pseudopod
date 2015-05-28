@@ -10,7 +10,7 @@ using namespace std;
 using namespace testing;
 using namespace tentacle;
 
-TEST(TentacleProtoBufTest, getStateMessage_1) {
+TEST(TentacleProtoBufTest, writeStateMessage_1) {
   uint8_t buffer[128];
   vector<tentacle::Pin> pins;
 

@@ -1,5 +1,5 @@
-# cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 2.8.8)
 project(nanopb C)
-file(GLOB sources "*.c")
-message("I am a big boy and found ${sources}")
+file(GLOB sources *.c *.h )
+set_property(GLOBAL PROPERTY NANOPB_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(nanopb ${sources})

@@ -1,29 +1,29 @@
-message ("building tests for the TERRIFYING TENTACLE")
-get_property(TENTACLE_INCLUDE_DIRS GLOBAL PROPERTY TENTACLE_INCLUDE_DIRS)
-get_property(TENTACLE_LIBS_DIR GLOBAL PROPERTY TENTACLE_LIBS_DIR)
-get_property(ARDUINO_MOCK_INCLUDE_DIRS GLOBAL PROPERTY ARDUINO_MOCK_INCLUDE_DIRS)
+message ("building tests for the TERRIFYING TENTACLE PROTOCOL BUFFER")
+
+message("nanopb dirs are:   ${NANOPB_INCLUDE_DIRS}")
 include_directories(
   ../..
+  ${TENTACLE_PROTO_BUF_INCLUDE_DIRS}
   ${GTEST_INCLUDE_DIRS}
   ${GMOCK_INCLUDE_DIRS}
   ${ARDUINO_MOCK_INCLUDE_DIRS}
+  ${NANOPB_INCLUDE_DIRS}
   ${TENTACLE_INCLUDE_DIRS}
 )
 
-file(GLOB SRCS *.cpp *.hpp)
+file(GLOB SRCS *.cpp *.hpp *.c *.h)
 add_executable(tentacleProtoBufSpec ${SRCS})
 
-
-message("tentacle header files are: ${TENTACLE_INCLUDE_DIRS}")
 target_link_libraries(tentacleProtoBufSpec
     tentacleProtoBuf
+    nanopb
     ${GTEST_LIBS_DIR}/libgtest.a
     ${GTEST_LIBS_DIR}/libgtest_main.a
     ${ARDUINO_MOCK_LIBS_DIR}/libarduino_mock.a
-    ${TENTACLE_LIBS_DIR}/libtentacle.a
     ${ARDUINO_MOCK_LIBS_DIR}/libarduino_mock.a
     ${GMOCK_LIBS_DIR}/libgmock.a
     ${CMAKE_THREAD_LIBS_INIT}
 )
+
 add_dependencies(tentacleProtoBufSpec gtest)
-add_test(tentacleProBuf tentacleProtoBufSpec)
+add_test(tentacleProtoBuf tentacleProtoBufSpec)

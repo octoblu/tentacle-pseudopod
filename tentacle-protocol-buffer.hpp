@@ -12,6 +12,6 @@ namespace tentacle {
   private:
     uint8_t *buffer;
     size_t bufferLength;
-    static bool pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);    
+    static bool pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
   };
 }
