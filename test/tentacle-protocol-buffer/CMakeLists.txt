@@ -1,6 +1,6 @@
 message ("building tests for the TERRIFYING TENTACLE PROTOCOL BUFFER")
 
-message("nanopb dirs are:   ${NANOPB_INCLUDE_DIRS}")
+message("tentacle libs are:   ${TENTACLE_LIBS_DIR}")
 include_directories(
   ../..
   ${TENTACLE_PROTO_BUF_INCLUDE_DIRS}
@@ -17,6 +17,7 @@ add_executable(tentacleProtoBufSpec ${SRCS})
 target_link_libraries(tentacleProtoBufSpec
     tentacleProtoBuf
     nanopb
+    ${TENTACLE_LIBS_DIR}/libtentacle.a
     ${GTEST_LIBS_DIR}/libgtest.a
     ${GTEST_LIBS_DIR}/libgtest_main.a
     ${ARDUINO_MOCK_LIBS_DIR}/libarduino_mock.a
