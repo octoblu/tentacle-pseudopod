@@ -1,5 +1,6 @@
 message ("building tests for the TERRIFYING TENTACLE")
 get_property(TENTACLE_INCLUDE_DIRS GLOBAL PROPERTY TENTACLE_INCLUDE_DIRS)
+get_property(TENTACLE_LIBS_DIR GLOBAL PROPERTY TENTACLE_LIBS_DIR)
 get_property(ARDUINO_MOCK_INCLUDE_DIRS GLOBAL PROPERTY ARDUINO_MOCK_INCLUDE_DIRS)
 include_directories(
   ../..
@@ -18,6 +19,8 @@ target_link_libraries(tentacleProtoBufSpec
     tentacleProtoBuf
     ${GTEST_LIBS_DIR}/libgtest.a
     ${GTEST_LIBS_DIR}/libgtest_main.a
+    ${ARDUINO_MOCK_LIBS_DIR}/libarduino_mock.a
+    ${TENTACLE_LIBS_DIR}/libtentacle.a
     ${ARDUINO_MOCK_LIBS_DIR}/libarduino_mock.a
     ${GMOCK_LIBS_DIR}/libgmock.a
     ${CMAKE_THREAD_LIBS_INIT}

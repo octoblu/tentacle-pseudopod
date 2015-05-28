@@ -1,8 +1,8 @@
 
-]
-microblu.proto""
-MicrobluState
-pin (2.Pin"'
-Pin
-	pinNumber (
+[
+microblu.proto"#
+MicrobluState
+pins (2.Pin"$
+Pin
+number (
 value (
