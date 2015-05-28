@@ -35,5 +35,5 @@ target_link_libraries(
 
 add_dependencies(tentacleProtoBuf tentacle nanopb)
 
-add_subdirectory(test)
 enable_testing()
+add_subdirectory(test)

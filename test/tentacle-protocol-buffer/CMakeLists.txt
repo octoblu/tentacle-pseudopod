@@ -1,6 +1,5 @@
 message ("building tests for the TERRIFYING TENTACLE PROTOCOL BUFFER")
 
-message("tentacle libs are:   ${TENTACLE_LIBS_DIR}")
 include_directories(
   ../..
   ${TENTACLE_PROTO_BUF_INCLUDE_DIRS}
@@ -12,6 +11,7 @@ include_directories(
 )
 
 file(GLOB SRCS *.cpp *.hpp *.c *.h)
+message("I think srcs are ${SRCS}")
 add_executable(tentacleProtoBufSpec ${SRCS})
 
 target_link_libraries(tentacleProtoBufSpec
