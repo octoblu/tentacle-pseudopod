@@ -1,5 +1,4 @@
 message MicrobluState {
-  required int32 name = 2;
   repeated Pin pins = 1;
 }
 

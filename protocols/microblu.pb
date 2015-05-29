@@ -1,8 +1,7 @@
 
-i
-microblu.proto"1
-MicrobluState
-name (
+[
+microblu.proto"#
+MicrobluState
 pins (2.Pin"$
 Pin
 number (
