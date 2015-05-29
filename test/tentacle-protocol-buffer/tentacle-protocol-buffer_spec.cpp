@@ -13,9 +13,9 @@ using namespace tentacle;
 TEST(TentacleProtoBufTest, writeStateMessage_1) {
   uint8_t buffer[128];
   vector<tentacle::Pin> pins;
-
+  pins.push_back(Pin(1, 5));
   TentacleProtoBuf tentacleProtoBuf(buffer, 128);
-  tentacleProtoBuf.writeStateMessage(pins);
-  vector<tentacle::Pin> pins2 = tentacleProtoBuf.readStateMessage();
+  unsigned int messageSize = tentacleProtoBuf.writeStateMessage(pins);
+  vector<tentacle::Pin> pins2 = tentacleProtoBuf.readStateMessage(messageSize);
   EXPECT_EQ(pins2.size(), 1);
 }

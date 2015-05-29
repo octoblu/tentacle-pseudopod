@@ -1,7 +1,8 @@
 
-[
-microblu.proto"#
-MicrobluState
+i
+microblu.proto"1
+MicrobluState
+name (
 pins (2.Pin"$
 Pin
 number (
