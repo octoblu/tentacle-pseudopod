@@ -1,7 +1,7 @@
 #include <pb_encode.h>
 #include <pb_decode.h>
 #include <iostream>
-#include "tentacle.hpp"
+#include "tentacle.h"
 #include "proto-buf.hpp"
 
 namespace tentacle {

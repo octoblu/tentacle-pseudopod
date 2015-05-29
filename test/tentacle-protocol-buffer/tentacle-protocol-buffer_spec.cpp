@@ -19,5 +19,5 @@ TEST(TentacleProtoBufTest, writeStateMessage_1) {
   unsigned int messageSize = tentacleProtoBuf.writeStateMessage(pins);
   vector<tentacle::Pin> pins2 = tentacleProtoBuf.readStateMessage(messageSize);
 
-  EXPECT_EQ(pins2.size(), 1);
+  EXPECT_EQ(pins2.size(), 2);
 }
