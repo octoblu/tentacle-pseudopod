@@ -1,4 +1,4 @@
-#include "tentacle-protocol-buffer.hpp"
+#include "tentacle-protocol-buffer.h"
 namespace tentacle {
   TentacleProtoBuf::TentacleProtoBuf(uint8_t *buffer, size_t bufferLength) {
     this->buffer = buffer;

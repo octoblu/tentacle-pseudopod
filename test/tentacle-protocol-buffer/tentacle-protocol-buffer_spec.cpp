@@ -4,7 +4,7 @@
 #include "gtest/gtest.h"
 #include "arduino-mock/Arduino.h"
 #include "arduino-mock/Serial.h"
-#include "tentacle-protocol-buffer.hpp"
+#include "tentacle-protocol-buffer.h"
 
 using namespace std;
 using namespace testing;
