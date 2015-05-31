@@ -36,7 +36,8 @@ namespace tentacle {
 
     std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
     bool fail = false;
-    for(Pin pin : *pins) {
+    for(int i = 0; i < pins->size(); i++) {
+      Pin pin = pins->at(i);
       protobuf::Pin protoBufPin;
 
       protoBufPin.number = pin.getNumber();

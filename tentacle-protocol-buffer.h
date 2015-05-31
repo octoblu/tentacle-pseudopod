@@ -4,6 +4,13 @@
 #include "tentacle.h"
 #include "proto-buf.hpp"
 
+extern "C" {
+#include <pb_encode.h>
+#include <pb_decode.h>
+}
+
+
+
 namespace tentacle {
   class TentacleProtoBuf {
   public:
