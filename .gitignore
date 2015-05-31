@@ -3,6 +3,10 @@ bin
 dist
 Testing
 
+#Protocol buffer generated files
+*.pb
+*.pb*
+
 # Compiled Object files
 *.slo
 *.lo

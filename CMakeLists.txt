@@ -4,7 +4,6 @@ project (tentacleProtoBuf)
 set(CMAKE_CXX_FLAGS "-std=c++11")
 
 add_subdirectory(lib)
-add_subdirectory(protocols)
 
 get_property(ARDUINO_MOCK_INCLUDE_DIRS GLOBAL PROPERTY ARDUINO_MOCK_INCLUDE_DIRS)
 get_property(GMOCK_INCLUDE_DIRS GLOBAL PROPERTY GMOCK_INCLUDE_DIRS)
@@ -20,17 +19,13 @@ include_directories(
   ${TENTACLE_INCLUDE_DIRS}
   ${NANOPB_INCLUDE_DIRS}
   lib/tentacle
-  protocols
 )
 
-message("I THINK NANOPB ${NANOPB_INCLUDE_DIRS}")
-
-add_library(tentacleProtoBuf tentacle-protocol-buffer.cpp)
+add_library(tentacleProtoBuf tentacle-protocol-buffer.cpp microblu.pb.c)
 
 target_link_libraries(
   tentacleProtoBuf
   nanopb
-  protocols
 )
 
 add_dependencies(tentacleProtoBuf tentacle nanopb)

@@ -9,8 +9,6 @@ extern "C" {
 #include <pb_decode.h>
 }
 
-
-
 namespace tentacle {
   class TentacleProtoBuf {
   public:

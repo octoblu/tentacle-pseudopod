@@ -1,9 +1,8 @@
 #!/bin/sh
-cd protocols
 rm *.pb*
-protoc microblu.proto -omicroblu.pb
+protoc protocols/microblu.proto -omicroblu.pb
 python ~/Projects/Octoblu/nanopb/generator/nanopb_generator.py microblu.pb
-cd ..
+
 [ ! -d build ] && mkdir build
 cd build && \
 cmake  .. && \
