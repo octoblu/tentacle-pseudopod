@@ -1,17 +1,15 @@
 #include "tentacle-protocol-buffer.h"
 namespace tentacle {
-  TentacleProtoBuf::TentacleProtoBuf(uint8_t *buffer, size_t bufferLength) {
-    this->buffer = buffer;
-    this->bufferLength = bufferLength;
+  TentacleProtoBuf::TentacleProtoBuf(Stream input, Stream output) {
+    this->input = input;
+    this->output = output;
   }
 
   unsigned int TentacleProtoBuf::writeStateMessage(const std::vector<Pin> &pins) {
 
     protobuf::MicrobluState message = {};
-    // message.has_pins = true;
     message.pins.funcs.encode = &TentacleProtoBuf::pinEncode;
     message.pins.arg = (void*) &pins;
-    // message.pins.funcs.decode = NULL;
 
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, bufferLength);
     bool status = pb_encode(&stream, protobuf::MicrobluState_fields, &message);
