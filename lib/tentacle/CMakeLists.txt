@@ -4,7 +4,7 @@ include(ExternalProject)
 
 ExternalProject_Add(tentacle
     URL https://github.com/octoblu/the-tentacle/archive/master.zip
-    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/tentacle
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}
     INSTALL_COMMAND ""
 )
 

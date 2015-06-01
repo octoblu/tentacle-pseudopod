@@ -4,13 +4,13 @@ include(ExternalProject)
 
 ExternalProject_Add(nanopb
     URL https://github.com/octoblu/arduino-nanopb/archive/master.zip
-    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/nanopb
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}
     INSTALL_COMMAND ""
 )
 
 # Specify include dir
 ExternalProject_Get_Property(nanopb source_dir)
-set_property(GLOBAL PROPERTY NANOPB_INCLUDE_DIRS ${source_dir}/include)
+set_property(GLOBAL PROPERTY NANOPB_INCLUDE_DIRS ${source_dir})
 
 ExternalProject_Get_Property(nanopb binary_dir)
 set_property(GLOBAL PROPERTY NANOPB_LIBS_DIR ${binary_dir})
