@@ -15,8 +15,8 @@ add_executable(tentacleProtoBufSpec ${SRCS})
 
 target_link_libraries(tentacleProtoBufSpec
     tentacleProtoBuf
-    nanopb
     ${TENTACLE_LIBS_DIR}/libtentacle.a
+    ${NANOPB_LIBS_DIR}/libnanopb.a
     ${GTEST_LIBS_DIR}/libgtest.a
     ${GTEST_LIBS_DIR}/libgtest_main.a
     ${ARDUINO_MOCK_LIBS_DIR}/libarduino_mock.a

@@ -1,5 +1,0 @@
-cmake_minimum_required(VERSION 2.8.8)
-project(arduino_nanopb C)
-file(GLOB sources *.c *.h )
-set_property(GLOBAL PROPERTY ARDUINO_NANOPB_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
-add_library(arduino_nanopb ${sources})

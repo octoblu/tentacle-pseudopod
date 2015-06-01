@@ -5,13 +5,13 @@ set(CMAKE_CXX_FLAGS "-std=c++98")
 
 add_subdirectory(lib)
 
-get_property(ARDUINO_MOCK_INCLUDE_DIRS GLOBAL PROPERTY ARDUINO_MOCK_INCLUDE_DIRS)
+# get_property(ARDUINO_MOCK_INCLUDE_DIRS GLOBAL PROPERTY ARDUINO_MOCK_INCLUDE_DIRS)
 get_property(GMOCK_INCLUDE_DIRS GLOBAL PROPERTY GMOCK_INCLUDE_DIRS)
 get_property(GTEST_INCLUDE_DIRS GLOBAL PROPERTY GTEST_INCLUDE_DIRS)
-get_property(NANOPB_INCLUDE_DIRS GLOBAL PROPERTY NANOPB_INCLUDE_DIRS)
-get_property(ARDUINO_NANOPB_INCLUDE_DIRS GLOBAL PROPERTY ARDUINO_NANOPB_INCLUDE_DIRS)
-get_property(TENTACLE_INCLUDE_DIRS GLOBAL PROPERTY TENTACLE_INCLUDE_DIRS)
-get_property(TENTACLE_LIBS_DIR GLOBAL PROPERTY TENTACLE_LIBS_DIR)
+# get_property(NANOPB_INCLUDE_DIRS GLOBAL PROPERTY NANOPB_INCLUDE_DIRS)
+# get_property(ARDUINO_NANOPB_INCLUDE_DIRS GLOBAL PROPERTY ARDUINO_NANOPB_INCLUDE_DIRS)
+# get_property(TENTACLE_INCLUDE_DIRS GLOBAL PROPERTY TENTACLE_INCLUDE_DIRS)
+# get_property(TENTACLE_LIBS_DIR GLOBAL PROPERTY TENTACLE_LIBS_DIR)
 
 include_directories(
   ${ARDUINO_MOCK_INCLUDE_DIRS}
@@ -27,11 +27,9 @@ add_library(tentacleProtoBuf tentacle-protocol-buffer.cpp microblu.pb.c)
 
 target_link_libraries(
   tentacleProtoBuf
-  nanopb
-  arduino_nanopb
 )
 
-add_dependencies(tentacleProtoBuf tentacle nanopb arduino_nanopb)
+add_dependencies(tentacleProtoBuf tentacle)
 
 enable_testing()
 add_subdirectory(test)

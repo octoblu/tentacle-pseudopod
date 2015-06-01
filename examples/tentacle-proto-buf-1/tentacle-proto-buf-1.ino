@@ -3,7 +3,7 @@ typedef unsigned char byte;
 #include <StandardCplusplus.h>
 #include <tentacle.h>
 #include <tentacle-protocol-buffer.h>
-#incude "Stream.h"
+#include "Stream.h"
 extern "C" {
   #include <pb_encode.h>
   #include <pb_decode.h>
