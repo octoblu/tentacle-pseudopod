@@ -1,6 +1,5 @@
 #include <pb_encode.h>
 #include <pb_decode.h>
-#include <iostream>
 #include "tentacle.h"
 #include "proto-buf.hpp"
 

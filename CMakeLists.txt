@@ -1,33 +1,48 @@
 cmake_minimum_required(VERSION 2.8)
-
 project (tentacleProtoBuf)
 set(CMAKE_CXX_FLAGS "-std=c++98")
+include(ExternalProject)
 
-add_subdirectory(lib)
+find_package(Threads REQUIRED)
 
-# get_property(ARDUINO_MOCK_INCLUDE_DIRS GLOBAL PROPERTY ARDUINO_MOCK_INCLUDE_DIRS)
-get_property(GMOCK_INCLUDE_DIRS GLOBAL PROPERTY GMOCK_INCLUDE_DIRS)
-get_property(GTEST_INCLUDE_DIRS GLOBAL PROPERTY GTEST_INCLUDE_DIRS)
-get_property(NANOPB_INCLUDE_DIRS GLOBAL PROPERTY NANOPB_INCLUDE_DIRS)
-get_property(TENTACLE_INCLUDE_DIRS GLOBAL PROPERTY TENTACLE_INCLUDE_DIRS)
-get_property(TENTACLE_LIBS_DIR GLOBAL PROPERTY TENTACLE_LIBS_DIR)
-message("I think nanopb is in ${NANOPB_INCLUDE_DIRS}")
-include_directories(
-  ${ARDUINO_MOCK_INCLUDE_DIRS}
-  ${GMOCK_INCLUDE_DIRS}
-  ${GTEST_INCLUDE_DIRS}
-  ${TENTACLE_INCLUDE_DIRS}
-  ${NANOPB_INCLUDE_DIRS}
-  lib/tentacle
+enable_testing()
+
+#Test libs
+ExternalProject_Add(gtest
+    URL https://googletest.googlecode.com/files/gtest-1.7.0.zip
+    INSTALL_COMMAND ""
+    UPDATE_COMMAND ""
 )
+
+ExternalProject_Add(gmock
+    URL https://googlemock.googlecode.com/files/gmock-1.7.0.zip
+    INSTALL_COMMAND ""
+    UPDATE_COMMAND ""
+)
+
+ExternalProject_Add(arduino_mock
+    GIT_REPOSITORY git@github.com:octoblu/arduino-mock
+    INSTALL_COMMAND ""
+    UPDATE_COMMAND ""
+)
+
+
+#runtime libs
+ExternalProject_Add(arduino_nanopb
+    GIT_REPOSITORY git@github.com:octoblu/arduino-nanopb
+    INSTALL_COMMAND ""
+    UPDATE_COMMAND ""
+)
+
+ExternalProject_Add(tentacle
+    GIT_REPOSITORY git@github.com:octoblu/the-tentacle
+    INSTALL_COMMAND ""
+    UPDATE_COMMAND ""
+)
+
+file(GLOB SRCS *.cpp *.hpp *.c *.h)
+add_executable(tentacleProtoBufSpec ${SRCS})
 
 add_library(tentacleProtoBuf tentacle-protocol-buffer.cpp microblu.pb.c)
 
-target_link_libraries(
-  tentacleProtoBuf
-)
-
-add_dependencies(tentacleProtoBuf tentacle)
-
-enable_testing()
-add_subdirectory(test)
+add_test(tentacleProtoBuf tentacleProtoBufSpec)
