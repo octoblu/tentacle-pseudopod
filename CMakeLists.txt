@@ -28,7 +28,7 @@ ExternalProject_Add(arduino_mock
 
 
 #runtime libs
-ExternalProject_Add(arduino_nanopb
+ExternalProject_Add(arduino-nanopb
     GIT_REPOSITORY git@github.com:octoblu/arduino-nanopb
     INSTALL_COMMAND ""
     UPDATE_COMMAND ""
