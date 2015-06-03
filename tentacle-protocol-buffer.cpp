@@ -8,27 +8,25 @@ namespace tentacle {
   }
 
   unsigned int TentacleProtoBuf::writeStateMessage(const std::vector<Pin> &pins) {
+    protobuf::MicrobluState message = {};
+    message.pins.funcs.encode = &TentacleProtoBuf::pinEncode;
+    message.pins.arg = (void*) &pins;
 
-    // protobuf::MicrobluState message = {};
-    // message.pins.funcs.encode = &TentacleProtoBuf::pinEncode;
-    // message.pins.arg = (void*) &pins;
-    //
-    // bool status = pb_encode(&stream, protobuf::MicrobluState_fields, &message);
-    // unsigned int messageSize = stream.bytes_written;
-    // return messageSize;
+    bool status = pb_encode(&pbOutput, protobuf::MicrobluState_fields, &message);
+    unsigned int messageSize = pbOutput.bytes_written;
+    return messageSize;
   }
 
-  const std::vector<Pin> TentacleProtoBuf::readStateMessage(unsigned int messageSize) {
-    // std::vector<Pin> pins;
-    // protobuf::MicrobluState message = {};
-    //
-    // message.pins.funcs.decode = &TentacleProtoBuf::pinDecode;
-    // message.pins.arg = (void*) &pins;
-    //
-    // pb_istream_t stream = pb_istream_from_buffer(buffer, messageSize);
-    // bool status = pb_decode(&stream, protobuf::MicrobluState_fields, &message);
-    //
-    // return pins;
+  const std::vector<Pin> TentacleProtoBuf::readStateMessage() {
+    std::vector<Pin> pins;
+    protobuf::MicrobluState message = {};
+
+    message.pins.funcs.decode = &TentacleProtoBuf::pinDecode;
+    message.pins.arg = (void*) &pins;
+
+    bool status = pb_decode(&pbInput, protobuf::MicrobluState_fields, &message);
+
+    return pins;
   }
 
   bool TentacleProtoBuf::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
