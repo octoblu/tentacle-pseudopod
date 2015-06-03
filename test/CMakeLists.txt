@@ -7,6 +7,7 @@ add_executable(tentacle-proto-buf-test ${SRCS})
 
 linkExternalProject(tentacle-proto-buf-test "gtest")
 linkExternalProject(tentacle-proto-buf-test "gmock")
+linkExternalProject(tentacle-proto-buf-test "arduino-mock")
 linkExternalProject(tentacle-proto-buf-test "arduino-nanopb")
 linkExternalProject(tentacle-proto-buf-test "tentacle")
 linkExternalProject(tentacle-proto-buf-test "tentacle-proto-buf")

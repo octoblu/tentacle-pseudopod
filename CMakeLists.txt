@@ -16,6 +16,7 @@ add_library(tentacle-proto-buf STATIC ${SRCS})
 
 getExternalProject("gtest" "https://googletest.googlecode.com/files/gtest-1.7.0.zip")
 getExternalProject("gmock" "https://googlemock.googlecode.com/files/gmock-1.7.0.zip")
+getExternalProject("arduino-mock" "https://github.com/octoblu/arduino-mock/archive/master.zip")
 getExternalProject("arduino-nanopb" "https://github.com/octoblu/arduino-nanopb/archive/master.zip")
 getExternalProject("tentacle" "https://github.com/octoblu/the-tentacle/archive/master.zip")
 
