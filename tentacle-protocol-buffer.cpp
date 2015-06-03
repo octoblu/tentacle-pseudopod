@@ -1,33 +1,34 @@
 #include "tentacle-protocol-buffer.h"
+#include "pb_arduino_encode.h"
+#include "pb_arduino_decode.h"
 namespace tentacle {
-  TentacleProtoBuf::TentacleProtoBuf(Stream *input, Stream *output) {
-    this->input = input;
-    this->output = output;
+  TentacleProtoBuf::TentacleProtoBuf(Stream &input, Print &output) {
+    pb_istream_from_stream(input, pbInput);
+    pb_ostream_from_stream(output, pbOutput);
   }
 
   unsigned int TentacleProtoBuf::writeStateMessage(const std::vector<Pin> &pins) {
 
-    protobuf::MicrobluState message = {};
-    message.pins.funcs.encode = &TentacleProtoBuf::pinEncode;
-    message.pins.arg = (void*) &pins;
-
-    pb_ostream_t stream = pb_ostream_from_buffer(buffer, bufferLength);
-    bool status = pb_encode(&stream, protobuf::MicrobluState_fields, &message);
-    unsigned int messageSize = stream.bytes_written;
-    return messageSize;
+    // protobuf::MicrobluState message = {};
+    // message.pins.funcs.encode = &TentacleProtoBuf::pinEncode;
+    // message.pins.arg = (void*) &pins;
+    //
+    // bool status = pb_encode(&stream, protobuf::MicrobluState_fields, &message);
+    // unsigned int messageSize = stream.bytes_written;
+    // return messageSize;
   }
 
   const std::vector<Pin> TentacleProtoBuf::readStateMessage(unsigned int messageSize) {
-    std::vector<Pin> pins;
-    protobuf::MicrobluState message = {};
-
-    message.pins.funcs.decode = &TentacleProtoBuf::pinDecode;
-    message.pins.arg = (void*) &pins;
-
-    pb_istream_t stream = pb_istream_from_buffer(buffer, messageSize);
-    bool status = pb_decode(&stream, protobuf::MicrobluState_fields, &message);
-
-    return pins;
+    // std::vector<Pin> pins;
+    // protobuf::MicrobluState message = {};
+    //
+    // message.pins.funcs.decode = &TentacleProtoBuf::pinDecode;
+    // message.pins.arg = (void*) &pins;
+    //
+    // pb_istream_t stream = pb_istream_from_buffer(buffer, messageSize);
+    // bool status = pb_decode(&stream, protobuf::MicrobluState_fields, &message);
+    //
+    // return pins;
   }
 
   bool TentacleProtoBuf::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
