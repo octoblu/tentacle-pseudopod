@@ -20,7 +20,7 @@ namespace tentacle {
   const std::vector<Pin> TentacleProtoBuf::readStateMessage(unsigned int messageSize) {
     std::vector<Pin> pins;
     protobuf::MicrobluState message = {};
-    // message.pins.funcs.encode = NULL;
+    
     message.pins.funcs.decode = &TentacleProtoBuf::pinDecode;
     message.pins.arg = (void*) &pins;
 
