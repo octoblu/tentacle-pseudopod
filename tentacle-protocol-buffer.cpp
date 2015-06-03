@@ -1,6 +1,6 @@
 #include "tentacle-protocol-buffer.h"
 namespace tentacle {
-  TentacleProtoBuf::TentacleProtoBuf(Stream input, Stream output) {
+  TentacleProtoBuf::TentacleProtoBuf(Stream *input, Stream *output) {
     this->input = input;
     this->output = output;
   }
@@ -20,7 +20,7 @@ namespace tentacle {
   const std::vector<Pin> TentacleProtoBuf::readStateMessage(unsigned int messageSize) {
     std::vector<Pin> pins;
     protobuf::MicrobluState message = {};
-    
+
     message.pins.funcs.decode = &TentacleProtoBuf::pinDecode;
     message.pins.arg = (void*) &pins;
 
