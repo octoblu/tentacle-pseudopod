@@ -24,6 +24,8 @@ include_directories(tentacle-proto-buf
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+set(TENTACLE-PROTO-BUF_LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
+
 set_target_properties(tentacle-proto-buf PROPERTIES ENABLE_EXPORTS true)
 
 linkExternalProject(tentacle-proto-buf "gtest")
