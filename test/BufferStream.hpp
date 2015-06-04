@@ -21,6 +21,7 @@ class BufferStream : public Stream {
     size_t readBytes( uint8_t *buffer, size_t length);
 
     size_t write(const uint8_t *buffer, size_t length);
+    
   private:
     uint8_t *buffer;
     int readden; //I know. Read is a verb and a noun. deal with it.

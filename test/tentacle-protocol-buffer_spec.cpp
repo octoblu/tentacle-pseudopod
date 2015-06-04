@@ -4,6 +4,7 @@
 #include "gtest/gtest.h"
 #include "Arduino.h"
 #include "Stream.h"
+#include "BufferStream.hpp"
 
 #include "tentacle-protocol-buffer.h"
 
@@ -12,8 +13,9 @@ using namespace testing;
 using namespace tentacle;
 
 TEST(TentacleProtoBufTest, writeStateMessage_1) {
-  uint8_t buffer[128];
-  StreamMock stream;
+  int length = 128;
+  uint8_t buffer[length];
+  BufferStream stream(buffer, length);
 
   vector<tentacle::Pin> pins;
   pins.push_back(Pin(4, 0, 1));

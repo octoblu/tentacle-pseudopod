@@ -1,75 +1,89 @@
 #include "BufferStream.hpp"
-  BufferStream::BufferStream(uint8_t *buffer, int bufferLength) {
-    this->buffer = buffer;
-    this->bufferLength = bufferLength;
-    this->readden = 0;
-    this->written = 0;
+#include <stdio.h>
+using namespace std;
+BufferStream::BufferStream(uint8_t *buffer, int bufferLength) {
+  this->buffer = buffer;
+  this->bufferLength = bufferLength;
+  this->readden = 0;
+  this->written = 0;
+}
+
+int BufferStream::available() {
+  cout << "BufferStream::available() " << written - readden << endl;
+  return written - readden;
+}
+
+int BufferStream::read() {
+  cout << "BufferStream::read() " << readden << endl;
+  return buffer[readden++];
+
+}
+
+int BufferStream::peek() {
+  cout << "BufferStream::peek() " << readden << endl;
+  return buffer[readden];
+}
+
+void BufferStream::flush() {
+  cout << "BufferStream::flush() " << endl;
+}
+
+
+bool BufferStream::find(char *target) {
+  cout << "BufferStream::find() " << endl;
+  return false;
+}
+
+bool BufferStream::find(uint8_t *target) {
+  cout << "BufferStream::find() " << endl;
+  return false;
+}
+
+
+bool BufferStream::find(char *target, size_t length) {
+  cout << "BufferStream::find() " << endl;
+  return false;
+}
+
+bool BufferStream::find(uint8_t *target, size_t length) {
+  cout << "BufferStream::find() " << endl;
+  return false;
+}
+
+size_t BufferStream::readBytes( char *buffer, size_t length) {
+  cout << "BufferStream::readBytes() " << buffer << ' ' << length << endl;
+  memcpy(&buffer, &this->buffer[readden], length);
+
+  size_t newRead = readden + length;
+  size_t written = length;
+
+  if (readden + length > this->written) {
+    written = this->written - readden;
+    readden = this->written;
+  } else {
+    readden += length;
   }
 
-  int BufferStream::available() {
-    return written - readden;
+  return written;
+}
+
+size_t BufferStream::readBytes( uint8_t *buffer, size_t length) {
+  cout << "BufferStream::readBytes() " << buffer << ' ' << length << endl;
+  buffer = &this->buffer[readden];
+
+  size_t newRead = readden + length;
+  size_t written = length;
+
+  if (readden + length > this->written) {
+    written = this->written - readden;
+    readden = this->written;
   }
 
-  int BufferStream::read() {
-    return buffer[readden++];
+  return written;
+}
 
-  }
-
-  int BufferStream::peek() {
-    return buffer[readden];
-  }
-
-  void BufferStream::flush() {
-  }
-
-
-  bool BufferStream::find(char *target) {
-    return false;
-  }
-
-  bool BufferStream::find(uint8_t *target) {
-    return false;
-  }
-
-
-  bool BufferStream::find(char *target, size_t length) {
-    return false;
-  }
-
-  bool BufferStream::find(uint8_t *target, size_t length) {
-    return false;
-  }
-
-  size_t BufferStream::readBytes( char *buffer, size_t length) {
-    memcpy(&buffer, &this->buffer[readden], length);
-
-    size_t newRead = readden + length;
-    size_t written = length;
-
-    if (readden + length > this->written) {
-      written = this->written - readden;
-      readden = this->written;
-    } else {
-      readden += length;
-    }
-
-    return written;
-  }
-
-  size_t BufferStream::readBytes( uint8_t *buffer, size_t length) {
-    buffer = &this->buffer[readden];
-
-    size_t newRead = readden + length;
-    size_t written = length;
-
-    if (readden + length > this->written) {
-      written = this->written - readden;
-      readden = this->written;
-    }
-
-    return written;
-  }
-
-  size_t BufferStream::write(const uint8_t *buffer, size_t length) {
-    memcpy(&this->buffer[readden], &buffer, length);
-  }
+size_t BufferStream::write(const uint8_t *buffer, size_t length) {
+  cout << "BufferStream::write() " << (unsigned int)*buffer << ' ' << length << endl;
+  memcpy(&this->buffer[readden], &buffer, length);
+  written += length;
+}
