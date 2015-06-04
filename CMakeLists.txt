@@ -31,6 +31,7 @@ set_target_properties(tentacle-proto-buf PROPERTIES ENABLE_EXPORTS true)
 
 linkExternalProject(tentacle-proto-buf "gtest")
 linkExternalProject(tentacle-proto-buf "gmock")
+linkExternalProject(tentacle-proto-buf "arduino-mock")
 linkExternalProject(tentacle-proto-buf "arduino-nanopb")
 linkExternalProject(tentacle-proto-buf "tentacle")
 
