@@ -7,6 +7,7 @@
 #include "BufferStream.hpp"
 
 #include "tentacle-protocol-buffer.h"
+#include <stdio.h>
 
 using namespace std;
 using namespace testing;
@@ -14,14 +15,20 @@ using namespace tentacle;
 
 TEST(TentacleProtoBufTest, writeStateMessage_1) {
   int length = 128;
-  uint8_t buffer[length];
-  BufferStream stream(buffer, length);
+  uint8_t ibuffer[length];
+  uint8_t obuffer[length];
+
+  BufferStream istream(ibuffer, length);
+  BufferStream ostream(obuffer, length);
 
   vector<tentacle::Pin> pins;
   pins.push_back(Pin(4, 0, 1));
   pins.push_back(Pin(40, 0, 0));
-  TentacleProtoBuf tentacleProtoBuf(stream, stream);
+  TentacleProtoBuf tentacleProtoBuf(istream, ostream);
+  cout << "writingMessage" << endl;
   tentacleProtoBuf.writeStateMessage(pins);
+  cout << "sending to input stream" << endl;
+  istream.write(obuffer, ostream.available());
   vector<tentacle::Pin> pins2 = tentacleProtoBuf.readStateMessage();
 
   EXPECT_EQ(pins2.size(), 2);
