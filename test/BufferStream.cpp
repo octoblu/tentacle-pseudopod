@@ -41,7 +41,7 @@
   }
 
   size_t BufferStream::readBytes( char *buffer, size_t length) {
-    buffer = (char*)&this->buffer[readden];
+    memcpy(&buffer, &this->buffer[readden], length);
 
     size_t newRead = readden + length;
     size_t written = length;
@@ -49,6 +49,8 @@
     if (readden + length > this->written) {
       written = this->written - readden;
       readden = this->written;
+    } else {
+      readden += length;
     }
 
     return written;
@@ -68,6 +70,6 @@
     return written;
   }
 
-  size_t BufferStream::write(const uint8_t *buffer, size_t size) {
-    memcpy(&this->buffer[readden], &buffer, size);
+  size_t BufferStream::write(const uint8_t *buffer, size_t length) {
+    memcpy(&this->buffer[readden], &buffer, length);
   }
