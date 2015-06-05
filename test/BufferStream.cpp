@@ -1,6 +1,14 @@
 #include "BufferStream.hpp"
 #include <stdio.h>
 using namespace std;
+
+void printBytes(const uint8_t *buffer, size_t length) {
+  for(int i = 0; i < length; i++) {
+    cout << (short)buffer[i] << ' ';
+  }
+  cout << endl;
+}
+
 BufferStream::BufferStream(uint8_t *buffer, int bufferLength) {
   this->buffer = buffer;
   this->bufferLength = bufferLength;
@@ -14,6 +22,10 @@ int BufferStream::available() {
 }
 
 int BufferStream::read() {
+  if (available() < 1) {
+    return -1;
+  }
+
   cout << "BufferStream::read() " << readden << endl << endl;
   return buffer[readden++];
 
@@ -51,9 +63,21 @@ bool BufferStream::find(uint8_t *target, size_t length) {
 }
 
 size_t BufferStream::readBytes( char *buffer, size_t length) {
-  cout << "BufferStream::readBytes() " << buffer << ' '  << (unsigned int)this->buffer[readden] << ' '<< length << endl << endl;
-  memcpy(&buffer, &this->buffer[readden], length);
+  return readBytes( (uint8_t *) buffer, length);
+}
 
+size_t BufferStream::readBytes( uint8_t *buffer, size_t length) {
+
+  cout << "BufferStream::readBytes() ";
+
+  if (available() < 1) {
+    return 0;
+  }
+
+  printBytes(buffer, length);
+
+  memcpy(buffer, &this->buffer[readden], length);
+  cout << "BufferStream::readBytes() ";
   size_t newRead = readden + length;
   size_t written = length;
 
@@ -67,27 +91,16 @@ size_t BufferStream::readBytes( char *buffer, size_t length) {
   return written;
 }
 
-size_t BufferStream::readBytes( uint8_t *buffer, size_t length) {
-
-  return readBytes( (char*) buffer, length);
-}
-
 size_t BufferStream::write(const uint8_t *buffer, size_t length) {
 
   cout << "BufferStream::write() ";
-  for(int i = 0; i < length; i++) {
-    cout << (short)buffer[i] << ' ';
-  }
-  cout << endl;
+  printBytes(buffer, length);
 
   memcpy(&this->buffer[written], buffer, length);
   cout << "BufferStream::write2() ";
+  printBytes(&this->buffer[written], length);
 
-  for(int i = 0; i < length; i++) {
-    cout << (short)this->buffer[written + i] << ' ';
-  }
-
-  cout << endl << endl;
+  cout << endl;
 
   written += length;
   return length;
