@@ -1,3 +1,3 @@
 namespace protobuf {
-  #include "microblu.pb.h"
+  #include "protocols/microblu.pb.h"
 }

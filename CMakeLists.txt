@@ -10,7 +10,7 @@ include(external-project-utils)
 
 project (tentacle-proto-buf)
 
-file(GLOB SRCS *.cpp *.hpp *.c *.h)
+file(GLOB SRCS *.cpp *.hpp *.c *.h protocols/*.c protocols/*.h)
 
 add_library(tentacle-proto-buf STATIC ${SRCS})
 
