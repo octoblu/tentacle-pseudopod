@@ -1,7 +1,6 @@
 #include "tentacle-pseudopod.h"
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
-#include <stdio.h>
 namespace tentacle {
   TentacleProtoBuf::TentacleProtoBuf(Stream &input, Print &output) {
     pb_istream_from_stream(input, pbInput);
@@ -24,9 +23,6 @@ namespace tentacle {
 
     message.pins.funcs.decode = &TentacleProtoBuf::pinDecode;
     message.pins.arg = (void*) &pins;
-    // pbInput.bytes_left = 12;
-    std::cout << "pbInput available: " << pbInput.bytes_left << std::endl;
-
     bool status = pb_decode(&pbInput, protobuf::MicrobluState_fields, &message);
 
     return pins;

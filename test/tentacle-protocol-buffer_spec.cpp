@@ -1,8 +1,8 @@
+#define USE_MOCKS
 #include <limits.h>
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "Arduino.h"
 #include "Stream.h"
 #include "BufferStream.hpp"
 
