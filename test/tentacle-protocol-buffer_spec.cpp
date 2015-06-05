@@ -6,7 +6,7 @@
 #include "Stream.h"
 #include "BufferStream.hpp"
 
-#include "tentacle-protocol-buffer.h"
+#include "tentacle-pseudopod.h"
 #include <stdio.h>
 
 using namespace std;

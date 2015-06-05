@@ -2,7 +2,7 @@
 typedef unsigned char byte;
 #include <StandardCplusplus.h>
 #include <tentacle.h>
-#include <tentacle-protocol-buffer.h>
+#include <tentacle-pseudopod.h>
 #include "Stream.h"
 extern "C" {
   #include <pb_encode.h>

@@ -1,4 +1,4 @@
-#include "tentacle-protocol-buffer.h"
+#include "tentacle-pseudopod.h"
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
 #include <stdio.h>
