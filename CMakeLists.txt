@@ -8,11 +8,11 @@ file(DOWNLOAD
 
 include(external-project-utils)
 
-project (tentacle-proto-buf)
+project (tentacle-pseudopod)
 
 file(GLOB SRCS *.cpp *.hpp *.c *.h protocols/*.c protocols/*.h)
 
-add_library(tentacle-proto-buf STATIC ${SRCS})
+add_library(tentacle-pseudopod STATIC ${SRCS})
 
 getExternalProject("gtest" "https://googletest.googlecode.com/files/gtest-1.7.0.zip")
 getExternalProject("gmock" "https://googlemock.googlecode.com/files/gmock-1.7.0.zip")
@@ -21,19 +21,19 @@ getExternalProject("arduino-nanopb" "https://github.com/octoblu/arduino-nanopb/a
 getExternalProject("tentacle" "https://github.com/octoblu/the-tentacle/archive/master.zip")
 
 
-include_directories(tentacle-proto-buf
+include_directories(tentacle-pseudopod
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-set(TENTACLE-PROTO-BUF_LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
+set(TENTACLE-PSEUDOPOD_LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
 
-set_target_properties(tentacle-proto-buf PROPERTIES ENABLE_EXPORTS true)
+set_target_properties(tentacle-pseudopod PROPERTIES ENABLE_EXPORTS true)
 
-linkExternalProject(tentacle-proto-buf "gtest")
-linkExternalProject(tentacle-proto-buf "gmock")
-linkExternalProject(tentacle-proto-buf "arduino-mock")
-linkExternalProject(tentacle-proto-buf "arduino-nanopb")
-linkExternalProject(tentacle-proto-buf "tentacle")
+linkExternalProject(tentacle-pseudopod "gtest")
+linkExternalProject(tentacle-pseudopod "gmock")
+linkExternalProject(tentacle-pseudopod "arduino-mock")
+linkExternalProject(tentacle-pseudopod "arduino-nanopb")
+linkExternalProject(tentacle-pseudopod "tentacle")
 
 option(test "Build all tests." OFF)
 

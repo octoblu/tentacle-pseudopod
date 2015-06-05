@@ -1,20 +1,20 @@
 set(CMAKE_CXX_FLAGS "-std=c++11")
-message ("building tests for the TERRIFYING TENTACLE (protocol buffer)")
+message ("building tests for the TERRIFYING TENTACLE's TERRIFYING PSEUDOPODS")
 
 file(GLOB SRCS *.cpp *.c )
 
-add_executable(tentacle-proto-buf-test ${SRCS})
+add_executable(tentacle-pseudopod-test ${SRCS})
 
-linkExternalProject(tentacle-proto-buf-test "gtest")
-linkExternalProject(tentacle-proto-buf-test "gmock")
-linkExternalProject(tentacle-proto-buf-test "arduino-mock")
-linkExternalProject(tentacle-proto-buf-test "arduino-nanopb")
-linkExternalProject(tentacle-proto-buf-test "tentacle")
-linkExternalProject(tentacle-proto-buf-test "tentacle-proto-buf")
+linkExternalProject(tentacle-pseudopod-test "gtest")
+linkExternalProject(tentacle-pseudopod-test "gmock")
+linkExternalProject(tentacle-pseudopod-test "arduino-mock")
+linkExternalProject(tentacle-pseudopod-test "arduino-nanopb")
+linkExternalProject(tentacle-pseudopod-test "tentacle")
+linkExternalProject(tentacle-pseudopod-test "tentacle-pseudopod")
 
 
-target_link_libraries(tentacle-proto-buf-test
+target_link_libraries(tentacle-pseudopod-test
     ${GTEST_LIB_DIR}/libgtest_main.a
 )
 
-add_test(tentacle-proto-buf tentacle-proto-buf-test)
+add_test(tentacle-pseudopod tentacle-pseudopod-test)
