@@ -10,9 +10,9 @@ extern "C" {
 }
 
 namespace tentacle {
-  class TentacleProtoBuf {
+  class Pseudopod {
   public:
-    TentacleProtoBuf(Stream &input, Print &output);
+    Pseudopod(Stream &input, Print &output);
     unsigned int writeStateMessage(const std::vector<Pin> &pins);
     const std::vector<Pin> readStateMessage();
 

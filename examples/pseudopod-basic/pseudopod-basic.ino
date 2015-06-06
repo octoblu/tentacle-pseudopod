@@ -22,6 +22,6 @@ void loop() {
   vector<Pin> pins;
   pins.push_back(Pin(5, 0, 0));
   pins.push_back(Pin(8, 0, 1));
-  TentacleProtoBuf tentacleProtoBuf(Serial, Serial);
-  unsigned int messageSize = tentacleProtoBuf.writeStateMessage(pins);
+  Pseudopod pseudopod(Serial, Serial);
+  unsigned int messageSize = pseudopod.writeStateMessage(pins);
 }

@@ -2,14 +2,14 @@
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
 namespace tentacle {
-  TentacleProtoBuf::TentacleProtoBuf(Stream &input, Print &output) {
+  Pseudopod::Pseudopod(Stream &input, Print &output) {
     pb_istream_from_stream(input, pbInput);
     pb_ostream_from_stream(output, pbOutput);
   }
 
-  unsigned int TentacleProtoBuf::writeStateMessage(const std::vector<Pin> &pins) {
+  unsigned int Pseudopod::writeStateMessage(const std::vector<Pin> &pins) {
     protobuf::MicrobluState message = {};
-    message.pins.funcs.encode = &TentacleProtoBuf::pinEncode;
+    message.pins.funcs.encode = &Pseudopod::pinEncode;
     message.pins.arg = (void*) &pins;
 
     bool status = pb_encode(&pbOutput, protobuf::MicrobluState_fields, &message);
@@ -17,18 +17,18 @@ namespace tentacle {
     return messageSize;
   }
 
-  const std::vector<Pin> TentacleProtoBuf::readStateMessage() {
+  const std::vector<Pin> Pseudopod::readStateMessage() {
     std::vector<Pin> pins;
     protobuf::MicrobluState message = {};
 
-    message.pins.funcs.decode = &TentacleProtoBuf::pinDecode;
+    message.pins.funcs.decode = &Pseudopod::pinDecode;
     message.pins.arg = (void*) &pins;
     bool status = pb_decode(&pbInput, protobuf::MicrobluState_fields, &message);
 
     return pins;
   }
 
-  bool TentacleProtoBuf::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
+  bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
 
     std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
     bool fail = false;
@@ -50,7 +50,7 @@ namespace tentacle {
     return true;
   }
 
-  bool TentacleProtoBuf::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg)
+  bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg)
   {
     std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
 

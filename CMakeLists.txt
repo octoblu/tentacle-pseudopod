@@ -13,7 +13,6 @@ project (tentacle-pseudopod)
 file(GLOB SRCS *.cpp *.hpp *.c *.h protocols/*.c protocols/*.h)
 
 add_library(tentacle-pseudopod STATIC ${SRCS})
-add_definitions(-DUSE_MOCKS)
 
 getExternalProject("gtest" "https://googletest.googlecode.com/files/gtest-1.7.0.zip")
 getExternalProject("gmock" "https://googlemock.googlecode.com/files/gmock-1.7.0.zip")
