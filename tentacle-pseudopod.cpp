@@ -1,6 +1,7 @@
 #include "tentacle-pseudopod.h"
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
+
 namespace tentacle {
   Pseudopod::Pseudopod(Stream &input, Print &output) {
     pb_istream_from_stream(input, pbInput);
