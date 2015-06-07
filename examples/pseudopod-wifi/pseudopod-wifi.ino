@@ -22,12 +22,13 @@ IPAddress server(192,168,0,112);
 #define port 8111
 
 int status = WL_IDLE_STATUS;
+WiFiClient conn;
 
 void setup() {
   Serial.begin(9600);
   Serial.println("Starting up.");
 
-  WiFiClient conn = setupWifi();
+  setupWifi();
   Serial.println("wifi should be setup!");
 
   pseudopod = new Pseudopod(conn, conn);
@@ -38,14 +39,20 @@ void setup() {
 }
 
 void loop() {
-  pseudopod->writeStateMessage(pins);  
+  Serial.println("writing");
+  Serial.flush();
+  int written = pseudopod->writeStateMessage(pins);
+  Serial.print(written);
+  Serial.println("bytes written.");
+  Serial.flush();
+  delay(2000);
 }
 
-WiFiClient setupWifi() {
-  WiFiClient client = initWifi();
+void setupWifi() {
+  initWifi();
 
   Serial.println("\nWifi initialized. Connecting to server.");
-  while(!client.connect(server, port)) {
+  while(!conn.connect(server, port)) {
     Serial.println("Can't connect to the server. Rebooting.");
     Serial.flush();
     softReset();
@@ -53,12 +60,9 @@ WiFiClient setupWifi() {
 
   Serial.println("connected to server");
   Serial.flush();
-
-  return client;
 }
 
-WiFiClient initWifi() {
-  WiFiClient client;
+void initWifi() {
   int status = WL_IDLE_STATUS;
 
   while (status != WL_CONNECTED) {
@@ -68,10 +72,9 @@ WiFiClient initWifi() {
 
     status = WiFi.begin(ssid, password);
 
-    delay(5000);
+    delay(10000);
   }
-
-  return client;
+  printWifiStatus();
 }
 
 void softReset() {

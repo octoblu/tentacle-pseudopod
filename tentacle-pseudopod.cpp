@@ -24,8 +24,7 @@ namespace tentacle {
 
     message.pins.funcs.decode = &Pseudopod::pinDecode;
     message.pins.arg = (void*) &pins;
-    bool status = pb_decode(&pbInput, protobuf::MicrobluState_fields, &message);
-
+    bool status = pb_decode(&pbInput, protobuf::MicrobluState_fields, &message);    
     return pins;
   }
 
