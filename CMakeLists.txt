@@ -10,7 +10,7 @@ include(external-project-utils)
 
 project (tentacle-pseudopod)
 
-file(GLOB SRCS *.cpp *.hpp *.c *.h protocols/*.c protocols/*.h)
+file(GLOB SRCS *.cpp *.hpp *.c *.h)
 
 add_library(tentacle-pseudopod STATIC ${SRCS})
 

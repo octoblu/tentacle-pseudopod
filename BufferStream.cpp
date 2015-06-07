@@ -7,6 +7,10 @@ BufferStream::BufferStream(uint8_t *buffer, int bufferLength) {
   this->written = 0;
 }
 
+void setup() {
+
+}
+
 int BufferStream::available() {
   return written - readden;
 }
@@ -69,6 +73,10 @@ size_t BufferStream::write(const uint8_t *buffer, size_t length) {
   memcpy(&this->buffer[written], buffer, length);
 
   written += length;
-  
+
   return length;
+}
+
+size_t BufferStream::write(uint8_t buffer) {
+  return write(&buffer, 1);
 }

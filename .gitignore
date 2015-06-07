@@ -4,7 +4,8 @@ dist
 Testing
 
 #Protocol buffer generated files
-protocols
+*.proto
+*.pb*
 
 # Compiled Object files
 *.slo
