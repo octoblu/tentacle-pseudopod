@@ -13,6 +13,7 @@
 using namespace tentacle;
 
 Pseudopod *pseudopod;
+
 std::vector<Pin> pins;
 
 char ssid[] = "ROBOT-WASTELAND";
@@ -32,10 +33,6 @@ void setup() {
   Serial.println("wifi should be setup!");
 
   pseudopod = new Pseudopod(conn, conn);
-
-  pins.push_back(Pin(4, 0, 1));
-  pins.push_back(Pin(40, 0, 0));
-
 }
 
 void loop() {
@@ -74,7 +71,6 @@ void initWifi() {
 
     delay(10000);
   }
-  printWifiStatus();
 }
 
 void softReset() {

@@ -1,4 +1,3 @@
-#define USE_MOCKS
 #include <limits.h>
 #include <vector>
 
