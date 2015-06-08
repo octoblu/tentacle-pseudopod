@@ -1,20 +1,19 @@
 #include <SPI.h>
 #include <WiFi.h>
 #include <StandardCplusplus.h>
-#include <tentacle.h>
 
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
 
 #include <tentacle-pseudopod.h>
+#include <tentacle.h>
+
 #include "BufferStream.hpp"
 
 #include "Arduino.h"
-using namespace tentacle;
 
 Pseudopod *pseudopod;
-
-std::vector<Pin> pins;
+Tentacle  tentacle;
 
 char ssid[] = "octoblu-guest";
 char password[] = "octoblu1";
@@ -31,8 +30,6 @@ WiFiClient conn;
 void setup() {
   Serial.begin(9600);
   Serial.println("Starting up.");
-  pins.push_back(Pin(1,NULL, 0));
-  pins.push_back(Pin(0, NULL, 1));
   setupWifi();
   Serial.println("wifi should be setup!");
 
@@ -42,7 +39,7 @@ void setup() {
 void loop() {
   Serial.println("writing");
   Serial.flush();
-  int written = pseudopod->writeStateMessage(pins);
+  int written = pseudopod->writeStateMessage(tentacle.getValue());
   Serial.print(written);
   Serial.println("bytes written.");
   Serial.flush();
