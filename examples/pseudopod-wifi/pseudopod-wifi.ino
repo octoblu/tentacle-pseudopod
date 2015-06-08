@@ -16,9 +16,12 @@ Pseudopod *pseudopod;
 
 std::vector<Pin> pins;
 
-char ssid[] = "ROBOT-WASTELAND";
-char password[] = "lemonade";
-IPAddress server(192,168,0,112);
+char ssid[] = "octoblu-guest";
+char password[] = "octoblu1";
+
+//192.168.100.7
+IPAddress server(172,16,42,44);
+
 /*char server[] = "192.168.0.112";*/
 #define port 8111
 
@@ -28,7 +31,8 @@ WiFiClient conn;
 void setup() {
   Serial.begin(9600);
   Serial.println("Starting up.");
-
+  pins.push_back(Pin(1,NULL, 0));
+  pins.push_back(Pin(0, NULL, 1));
   setupWifi();
   Serial.println("wifi should be setup!");
 
@@ -49,6 +53,7 @@ void setupWifi() {
   initWifi();
 
   Serial.println("\nWifi initialized. Connecting to server.");
+  printWifiStatus();
   while(!conn.connect(server, port)) {
     Serial.println("Can't connect to the server. Rebooting.");
     Serial.flush();
@@ -71,6 +76,23 @@ void initWifi() {
 
     delay(10000);
   }
+}
+
+void printWifiStatus() {
+  // print the SSID of the network you're attached to:
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  // print your WiFi shield's IP address:
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+  Serial.println(ip);
+
+  // print the received signal strength:
+  long rssi = WiFi.RSSI();
+  Serial.print("signal strength (RSSI):");
+  Serial.print(rssi);
+  Serial.println(" dBm");
 }
 
 void softReset() {

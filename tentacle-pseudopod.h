@@ -1,13 +1,11 @@
-#include <pb_encode.h>
-#include <pb_decode.h>
-#include "tentacle.h"
-#include "Stream.h"
-#include "proto-buf.hpp"
-
 extern "C" {
 #include <pb_encode.h>
 #include <pb_decode.h>
 }
+
+#include "tentacle.h"
+#include "Stream.h"
+#include "proto-buf.hpp"
 
 namespace tentacle {
   class Pseudopod {
