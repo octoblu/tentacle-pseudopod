@@ -7,15 +7,17 @@
 
 #include "MemoryFree.h"
 
-#include <tentacle-pseudopod.h>
-#include <tentacle.h>
+#include "tentacle.h"
+#include "tentacle-arduino.h"
+#include "tentacle-pseudopod.h"
+
 
 #include "BufferStream.hpp"
 
 #include "Arduino.h"
 
 Pseudopod *pseudopod;
-Tentacle  tentacle;
+TentacleArduino  tentacle;
 
 char ssid[] = "octoblu-guest";
 char password[] = "octoblu1";
@@ -34,7 +36,8 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting up.");
   setupWifi();
-  pseudopod = new Pseudopod(conn, conn);
+  pseudopod = new Pseudopod(tentacle, conn, conn);
+  tentacle.configurePin(Pin(0, Pin::digitalRead));
 }
 
 int freeRam () 
@@ -48,12 +51,12 @@ void loop() {
   if (!conn.connected()) {
     softReset();
   }
-  
+  Serial.print("Number of Pins:");
+  Serial.println(tentacle.getNumberOfPins());
   Serial.println("writing");
   Serial.flush();
 
-  pins = tentacle.getValue();
-  int written = pseudopod->writeStateMessage(pins);
+  int written = pseudopod->sendValue();
 
   Serial.print(written);
   Serial.println(" bytes written.");

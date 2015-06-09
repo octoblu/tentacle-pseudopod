@@ -9,7 +9,7 @@ extern "C" {
 
 class Pseudopod {
 public:
-  Pseudopod(Tentacle tentacle, Stream &input, Print &output);
+  Pseudopod(Tentacle &tentacle, Stream &input, Print &output);
   unsigned int sendValue();
   void readMessage();
 
@@ -17,7 +17,7 @@ private:
   pb_ostream_t pbOutput;
   pb_istream_t pbInput;
 
-  Tentacle tentacle;
+  Tentacle *tentacle;
 
   static bool pinEncodeConfig(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
   static bool pinEncodeValue(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);

@@ -2,17 +2,23 @@
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
 
-Pseudopod::Pseudopod(Tentacle tentacle, Stream &input, Print &output) {
+Pseudopod::Pseudopod(Tentacle &tentacle, Stream &input, Print &output) {
   pb_istream_from_stream(input, pbInput);
   pb_ostream_from_stream(output, pbOutput);
-  this->tentacle = tentacle;
+  this->tentacle = &tentacle;
 }
 
 unsigned int Pseudopod::sendValue() {
   pbOutput.bytes_written = 0;
   protobuf::TentacleMessage message = {};
+
+  message.topic = protobuf::Topic_action;
+  message.has_topic = true;
+  message.response = true;
+  message.has_response = true;
   message.pins.funcs.encode = &Pseudopod::pinEncodeValue;
-  std::vector<Pin> values = tentacle.getValue();
+
+  std::vector<Pin> values = tentacle->getValue();
   message.pins.arg = (void*)&values;
   bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &message);
   unsigned int messageSize = pbOutput.bytes_written;
@@ -105,7 +111,7 @@ bool Pseudopod::pinEncodeValue(pb_ostream_t *stream, const pb_field_t *field, vo
 
     protoBufPin.number = pin.getNumber();
     protoBufPin.value = pin.getValue();
-
+    protoBufPin.has_value = true;
     if (!pb_encode_tag_for_field(stream, field)) {
       return false;
     }
@@ -127,7 +133,9 @@ bool Pseudopod::pinEncodeConfig(pb_ostream_t *stream, const pb_field_t *field, v
 
     protoBufPin.number = pin.getNumber();
     protoBufPin.action = getProtoBufAction(pin.getAction());
+    protoBufPin.has_action = true;
     protoBufPin.pullup = pin.getPullup();
+    protoBufPin.has_pullup = true;
 
     if (!pb_encode_tag_for_field(stream, field)) {
       return false;
