@@ -34,8 +34,6 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting up.");
   setupWifi();
-  Serial.println("wifi should be setup!");
-
   pseudopod = new Pseudopod(conn, conn);
 }
 
@@ -47,15 +45,16 @@ int freeRam ()
 }
 
 void loop() {
-  connectToServer();
+  if (!conn.connected()) {
+    connectToServer();
+  }
+  
   Serial.println("writing");
   Serial.flush();
-  pins.clear();
-  for(int i = 0; i < 80; i++) {
-    pins.push_back(Pin(i,NULL, i));
-  }
-  Serial.println("pushed a lot of pins into a vector");
+
+  pins = tentacle.getValue();
   int written = pseudopod->writeStateMessage(pins);
+
   Serial.print(written);
   Serial.println(" bytes written.");
   Serial.print(freeMemory());
@@ -64,42 +63,29 @@ void loop() {
   Serial.println(" bytes free");
   Serial.flush();
   delay(2000);
-  conn.stop();  
-}
-
-void setupWifi() {
-  initWifi();
-
-  Serial.println("\nWifi initialized. Connecting to server.");
-  printWifiStatus();
-
-  Serial.println("connected to server");
-  Serial.flush();
 }
 
 void connectToServer() {
+  Serial.println("Connecting to the server.");
+  Serial.flush();
   while(!conn.connect(server, port)) {
-      Serial.println("Can't connect to the server.");
-      Serial.flush();
-      delay(1000);     
-    }
+    Serial.println("Can't connect to the server.");
+    Serial.flush();
+    conn.stop();
+    delay(1000);     
+  }
 }
 
-void initWifi() {
+void setupWifi() {
   int status = WL_IDLE_STATUS;
 
   while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
     Serial.flush();
-
     status = WiFi.begin(ssid, password);
-
-    delay(3000);
   }
-}
 
-void printWifiStatus() {
   // print the SSID of the network you're attached to:
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
@@ -114,6 +100,8 @@ void printWifiStatus() {
   Serial.print("signal strength (RSSI):");
   Serial.print(rssi);
   Serial.println(" dBm");
+
+  Serial.flush();
 }
 
 void softReset() {
