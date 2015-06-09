@@ -71,7 +71,7 @@ void initWifi() {
 
     status = WiFi.begin(ssid, password);
 
-    delay(10000);
+    delay(3000);
   }
 }
 

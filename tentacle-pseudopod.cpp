@@ -8,22 +8,23 @@ Pseudopod::Pseudopod(Stream &input, Print &output) {
 }
 
 unsigned int Pseudopod::writeStateMessage(const std::vector<Pin> &pins) {
-  protobuf::MicrobluState message = {};
+  pbOutput.bytes_written = 0;
+  protobuf::TentacleMessage message = {};
   message.pins.funcs.encode = &Pseudopod::pinEncode;
   message.pins.arg = (void*) &pins;
 
-  bool status = pb_encode(&pbOutput, protobuf::MicrobluState_fields, &message);
+  bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &message);
   unsigned int messageSize = pbOutput.bytes_written;
   return messageSize;
 }
 
 const std::vector<Pin> Pseudopod::readStateMessage() {
   std::vector<Pin> pins;
-  protobuf::MicrobluState message = {};
+  protobuf::TentacleMessage message = {};
 
   message.pins.funcs.decode = &Pseudopod::pinDecode;
   message.pins.arg = (void*) &pins;
-  bool status = pb_decode(&pbInput, protobuf::MicrobluState_fields, &message);
+  bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &message);
   return pins;
 }
 
