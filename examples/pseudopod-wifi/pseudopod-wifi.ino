@@ -5,6 +5,8 @@
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
 
+#include "MemoryFree.h"
+
 #include <tentacle-pseudopod.h>
 #include <tentacle.h>
 
@@ -26,6 +28,7 @@ IPAddress server(172,16,42,44);
 
 int status = WL_IDLE_STATUS;
 WiFiClient conn;
+std::vector<Pin> pins;
 
 void setup() {
   Serial.begin(9600);
@@ -36,18 +39,32 @@ void setup() {
   pseudopod = new Pseudopod(conn, conn);
 }
 
+int freeRam () 
+{
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+}
+
 void loop() {
+  connectToServer();
   Serial.println("writing");
   Serial.flush();
-  std::vector<Pin> pins;
-  for(int i = 0; i < 300; i++) {
+  pins.clear();
+  for(int i = 0; i < 80; i++) {
     pins.push_back(Pin(i,NULL, i));
   }
+  Serial.println("pushed a lot of pins into a vector");
   int written = pseudopod->writeStateMessage(pins);
   Serial.print(written);
-  Serial.println("bytes written.");
+  Serial.println(" bytes written.");
+  Serial.print(freeMemory());
+  Serial.print(" : ");
+  Serial.print(freeRam());
+  Serial.println(" bytes free");
   Serial.flush();
   delay(2000);
+  conn.stop();  
 }
 
 void setupWifi() {
@@ -55,14 +72,17 @@ void setupWifi() {
 
   Serial.println("\nWifi initialized. Connecting to server.");
   printWifiStatus();
-  while(!conn.connect(server, port)) {
-    Serial.println("Can't connect to the server. Rebooting.");
-    Serial.flush();
-    softReset();
-  }
 
   Serial.println("connected to server");
   Serial.flush();
+}
+
+void connectToServer() {
+  while(!conn.connect(server, port)) {
+      Serial.println("Can't connect to the server.");
+      Serial.flush();
+      delay(1000);     
+    }
 }
 
 void initWifi() {
