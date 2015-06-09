@@ -34,10 +34,3 @@ linkExternalProject(tentacle-pseudopod "gmock")
 linkExternalProject(tentacle-pseudopod "arduino-mock")
 linkExternalProject(tentacle-pseudopod "arduino-nanopb")
 linkExternalProject(tentacle-pseudopod "tentacle")
-
-option(test "Build all tests." OFF)
-
-if (test)
-  enable_testing()
-  add_subdirectory(test)
-endif()

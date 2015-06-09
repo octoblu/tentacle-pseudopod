@@ -2,7 +2,8 @@
 rm *.proto
 rm *.pb*
 
-wget https://raw.githubusercontent.com/octoblu/tentacle-protocol-buffer/master/tentacle-message.proto
+wget -O tentacle-message.proto \
+  https://raw.githubusercontent.com/octoblu/tentacle-protocol-buffer/master/tentacle-message.proto
 protoc tentacle-message.proto -otentacle-message.pb
 python ~/Projects/Octoblu/nanopb/generator/nanopb_generator.py tentacle-message.pb
 

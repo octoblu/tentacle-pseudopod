@@ -46,7 +46,7 @@ int freeRam ()
 
 void loop() {
   if (!conn.connected()) {
-    connectToServer();
+    softReset();
   }
   
   Serial.println("writing");
@@ -102,6 +102,8 @@ void setupWifi() {
   Serial.println(" dBm");
 
   Serial.flush();
+  
+  connectToServer();
 }
 
 void softReset() {

@@ -2,33 +2,100 @@
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
 
-Pseudopod::Pseudopod(Stream &input, Print &output) {
+Pseudopod::Pseudopod(Tentacle tentacle, Stream &input, Print &output) {
   pb_istream_from_stream(input, pbInput);
   pb_ostream_from_stream(output, pbOutput);
+  this->tentacle = tentacle;
 }
 
-unsigned int Pseudopod::writeStateMessage(const std::vector<Pin> &pins) {
+unsigned int Pseudopod::sendValue() {
   pbOutput.bytes_written = 0;
   protobuf::TentacleMessage message = {};
-  message.pins.funcs.encode = &Pseudopod::pinEncode;
-  message.pins.arg = (void*) &pins;
-
+  message.pins.funcs.encode = &Pseudopod::pinEncodeValue;
+  std::vector<Pin> values = tentacle.getValue();
+  message.pins.arg = (void*)&values;
   bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &message);
   unsigned int messageSize = pbOutput.bytes_written;
   return messageSize;
 }
 
-const std::vector<Pin> Pseudopod::readStateMessage() {
+void Pseudopod::readMessage() {
   std::vector<Pin> pins;
   protobuf::TentacleMessage message = {};
 
   message.pins.funcs.decode = &Pseudopod::pinDecode;
   message.pins.arg = (void*) &pins;
   bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &message);
-  return pins;
+
 }
 
-bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
+Pin::Action getPinAction(protobuf::Action action) {
+  switch(action) {
+    case protobuf::Action_digitalRead :
+      return Pin::digitalRead;
+
+    case protobuf::Action_digitalWrite:
+      return Pin::digitalWrite;
+
+    case protobuf::Action_analogRead  :
+      return Pin::analogRead;
+
+    case protobuf::Action_analogWrite :
+      return Pin::analogWrite;
+
+    case protobuf::Action_servoWrite  :
+      return Pin::servoWrite;
+
+    case protobuf::Action_pwmWrite    :
+      return Pin::pwmWrite;
+
+    case protobuf::Action_i2cWrite    :
+      return Pin::i2cWrite;
+
+    case protobuf::Action_i2cRead     :
+      return Pin::i2cRead;
+
+    case protobuf::Action_ignore      :
+    default:
+      return Pin::ignore;
+    break;
+  }
+}
+
+protobuf::Action getProtoBufAction(Pin::Action action) {
+  switch(action) {
+    case Pin::digitalRead :
+      return protobuf::Action_digitalRead;
+
+    case Pin::digitalWrite:
+      return protobuf::Action_digitalWrite;
+
+    case Pin::analogRead  :
+      return protobuf::Action_analogRead;
+
+    case Pin::analogWrite :
+      return protobuf::Action_analogWrite;
+
+    case Pin::servoWrite  :
+      return protobuf::Action_servoWrite;
+
+    case Pin::pwmWrite    :
+      return protobuf::Action_pwmWrite;
+
+    case Pin::i2cWrite    :
+      return protobuf::Action_i2cWrite;
+
+    case Pin::i2cRead     :
+      return protobuf::Action_i2cRead;
+
+    case Pin::ignore      :
+    default:
+      return protobuf::Action_ignore;
+    break;
+  }
+}
+
+bool Pseudopod::pinEncodeValue(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
 
   std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
   bool fail = false;
@@ -50,6 +117,30 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
   return true;
 }
 
+bool Pseudopod::pinEncodeConfig(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
+
+  std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
+  bool fail = false;
+  for(int i = 0; i < pins->size(); i++) {
+    Pin pin = pins->at(i);
+    protobuf::Pin protoBufPin;
+
+    protoBufPin.number = pin.getNumber();
+    protoBufPin.action = getProtoBufAction(pin.getAction());
+    protoBufPin.pullup = pin.getPullup();
+
+    if (!pb_encode_tag_for_field(stream, field)) {
+      return false;
+    }
+
+    if(!pb_encode_submessage(stream, protobuf::Pin_fields, &protoBufPin)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
 bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg)
 {
   std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
@@ -59,7 +150,8 @@ bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **
   if (!pb_decode(stream, protobuf::Pin_fields, &protoBufPin)) {
       return false;
   }
-  Pin pin(protoBufPin.number, NULL, protoBufPin.value);
+
+  Pin pin((int)protoBufPin.number, getPinAction(protoBufPin.action), protoBufPin.value);
 
   pins->push_back(pin);
 
