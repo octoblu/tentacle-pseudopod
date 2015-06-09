@@ -39,7 +39,11 @@ void setup() {
 void loop() {
   Serial.println("writing");
   Serial.flush();
-  int written = pseudopod->writeStateMessage(tentacle.getValue());
+  std::vector<Pin> pins;
+  for(int i = 0; i < 300; i++) {
+    pins.push_back(Pin(i,NULL, i));
+  }
+  int written = pseudopod->writeStateMessage(pins);
   Serial.print(written);
   Serial.println("bytes written.");
   Serial.flush();
