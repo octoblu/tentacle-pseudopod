@@ -11,13 +11,15 @@
 #include "tentacle-arduino.h"
 #include "tentacle-pseudopod.h"
 
-
 #include "BufferStream.hpp"
-
 #include "Arduino.h"
+#include <string>
+#include <EEPROM.h>
+#include "EEPROMAnything.h"
 
 Pseudopod *pseudopod;
 TentacleArduino  tentacle;
+
 
 char ssid[] = "octoblu-guest";
 char password[] = "octoblu1";
@@ -37,6 +39,11 @@ void setup() {
   Serial.println("Starting up.");
   setupWifi();
   pseudopod = new Pseudopod(tentacle, conn, conn);
+  std::string wow = "WOW";
+  EEPROM_writeAnything<std::string>(0,wow);
+  std::string notWow;
+  EEPROM_readAnything<std::string>(0,notWow);
+  Serial.println(notWow.c_str());
 }
 
 int freeRam ()

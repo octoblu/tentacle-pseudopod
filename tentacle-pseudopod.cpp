@@ -3,6 +3,7 @@
 #include "pb_arduino_decode.h"
 #include "Arduino.h"
 
+//TODO: Fix THIS broken code! Should be somewhere else....
 Pseudopod::Pseudopod(Tentacle &tentacle, Stream &input, Print &output) {
   pb_istream_from_stream(input, pbInput);
   pb_ostream_from_stream(output, pbOutput);
@@ -41,8 +42,7 @@ unsigned int Pseudopod::sendValue() {
   bool status = pb_decode(&pbInput, protobuf::TentacleMessage_fields, &message);
   switch(message.topic) {
 
-    case protobuf::Topic_action:
-      //std::vector<Pin> = tentacle->getValue(&pins[0], pins.size());
+    case protobuf::Topic_action:    
       sendValue(&pins[0], pins.size());
       Serial.println(F("Got an ACTION topic!"));
     break;
