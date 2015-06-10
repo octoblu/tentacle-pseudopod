@@ -9,7 +9,7 @@ Pseudopod::Pseudopod(Tentacle &tentacle, Stream &input, Print &output) {
   this->tentacle = &tentacle;
 }
 
-unsigned int Pseudopod::sendValue() {
+unsigned int Pseudopod::sendValue(Pin *pins, int length) {
   pbOutput.bytes_written = 0;
   protobuf::TentacleMessage message = {};
 
@@ -19,27 +19,39 @@ unsigned int Pseudopod::sendValue() {
   message.has_response = true;
   message.pins.funcs.encode = &Pseudopod::pinEncodeValue;
 
-  std::vector<Pin> values = tentacle->getValue();
+  std::vector<Pin> values = tentacle->getValue(pins, length);
   message.pins.arg = (void*)&values;
-  bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &message);
+  bool status = pb_encode(&pbOutput, protobuf::TentacleMessage_fields, &message);
+  (pbOutput.callback)(&pbOutput,{0x0},1);
   unsigned int messageSize = pbOutput.bytes_written;
   return messageSize;
 }
 
+unsigned int Pseudopod::sendValue() {
+  return sendValue(tentacle->getConfig(), tentacle->getNumPins());
+}
+
  bool Pseudopod::readMessage() {
-  Serial.println("In readMessage");
   std::vector<Pin> pins;
   protobuf::TentacleMessage message = {};
 
   message.pins.funcs.decode = &Pseudopod::pinDecode;
   message.pins.arg = (void*) &pins;
 
-  Serial.println("About to decode");
-  bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &message);
-  Serial.print("topic was: ");
-  Serial.println(message.topic);
-  Serial.print("error:");
-  Serial.println(pbInput.errmsg);
+  bool status = pb_decode(&pbInput, protobuf::TentacleMessage_fields, &message);
+  switch(message.topic) {
+
+    case protobuf::Topic_action:
+      //std::vector<Pin> = tentacle->getValue(&pins[0], pins.size());
+      sendValue(&pins[0], pins.size());
+      Serial.println(F("Got an ACTION topic!"));
+    break;
+
+    case protobuf::Topic_config:
+      tentacle->configurePins(pins);
+      Serial.println(F("Got an CONFIG topic!"));
+    break;
+  }
   return status;
 }
 
@@ -159,30 +171,16 @@ bool Pseudopod::pinEncodeConfig(pb_ostream_t *stream, const pb_field_t *field, v
 
 bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg)
 {
-  Serial.println("I think I'm decoding some pins");
-  Serial.flush();
   std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
 
   protobuf::Pin protoBufPin;
 
-  Serial.println("Decoding a pin");
-  Serial.flush();
-
   if (!pb_decode(stream, protobuf::Pin_fields, &protoBufPin)) {
-      Serial.println("Decoding a pin wasn't successful");
-      Serial.flush();
       return false;
   }
-
-  Serial.println("Constructing a pin");
-  Serial.flush();
 
   Pin pin((int)protoBufPin.number, getPinAction(protoBufPin.action), protoBufPin.value);
 
   pins->push_back(pin);
-  Serial.print("The pin was:");
-  Serial.println(pin.getNumber());
-  Serial.println(pin.getAction());
-  Serial.println(pin.getValue());
   return true;
 }

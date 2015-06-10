@@ -37,14 +37,13 @@ void setup() {
   Serial.println("Starting up.");
   setupWifi();
   pseudopod = new Pseudopod(tentacle, conn, conn);
-  tentacle.configurePin(Pin(2, Pin::digitalRead));
 }
 
-int freeRam () 
+int freeRam ()
 {
-  extern int __heap_start, *__brkval; 
-  int v; 
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+  extern int __heap_start, *__brkval;
+  int v;
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
 }
 
 void loop() {
@@ -54,17 +53,15 @@ void loop() {
     softReset();
   }
   Serial.print("Number of Pins:");
-  Serial.println(tentacle.getNumberOfPins());
+  Serial.println(tentacle.getNumPins());
   Serial.println("writing");
   Serial.flush();
   sendData();
-  delay(2000);
   readData();
-  delay(2000);
-  
 }
 
 void sendData() {
+  //tentacle.getConfig()[2].action = Pin::digitalRead;
   int written = pseudopod->sendValue();
   Serial.print(written);
   Serial.println(" bytes written.");
@@ -76,7 +73,8 @@ void sendData() {
 }
 
 void readData() {
-  if(conn.available()) {
+  while (conn.available()) {
+    delay(2000);
     Serial.println("DATA WAS AVAILABLE!");
     Serial.flush();
     bool wasSuccessful = pseudopod->readMessage();
@@ -92,7 +90,7 @@ void connectToServer() {
     Serial.println("Can't connect to the server.");
     Serial.flush();
     conn.stop();
-    delay(1000);     
+    delay(1000);
   }
 }
 
@@ -122,7 +120,7 @@ void setupWifi() {
   Serial.println(" dBm");
 
   Serial.flush();
-  
+
   connectToServer();
 }
 

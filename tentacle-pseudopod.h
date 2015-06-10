@@ -10,6 +10,7 @@ extern "C" {
 class Pseudopod {
 public:
   Pseudopod(Tentacle &tentacle, Stream &input, Print &output);
+  unsigned int sendValue(Pin *pins, int length);
   unsigned int sendValue();
   bool readMessage();
 
