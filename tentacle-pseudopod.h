@@ -11,7 +11,7 @@ class Pseudopod {
 public:
   Pseudopod(Tentacle &tentacle, Stream &input, Print &output);
   unsigned int sendValue();
-  void readMessage();
+  bool readMessage();
 
 private:
   pb_ostream_t pbOutput;

@@ -37,7 +37,7 @@ void setup() {
   Serial.println("Starting up.");
   setupWifi();
   pseudopod = new Pseudopod(tentacle, conn, conn);
-  tentacle.configurePin(Pin(0, Pin::digitalRead));
+  tentacle.configurePin(Pin(2, Pin::digitalRead));
 }
 
 int freeRam () 
@@ -49,15 +49,23 @@ int freeRam ()
 
 void loop() {
   if (!conn.connected()) {
+    Serial.print("I wasn't connected!");
+    Serial.flush();
     softReset();
   }
   Serial.print("Number of Pins:");
   Serial.println(tentacle.getNumberOfPins());
   Serial.println("writing");
   Serial.flush();
+  sendData();
+  delay(2000);
+  readData();
+  delay(2000);
+  
+}
 
+void sendData() {
   int written = pseudopod->sendValue();
-
   Serial.print(written);
   Serial.println(" bytes written.");
   Serial.print(freeMemory());
@@ -65,7 +73,16 @@ void loop() {
   Serial.print(freeRam());
   Serial.println(" bytes free");
   Serial.flush();
-  delay(2000);
+}
+
+void readData() {
+  if(conn.available()) {
+    Serial.println("DATA WAS AVAILABLE!");
+    Serial.flush();
+    bool wasSuccessful = pseudopod->readMessage();
+    Serial.print("Was the topic successful?: ");
+    Serial.println(wasSuccessful);
+  }
 }
 
 void connectToServer() {

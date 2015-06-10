@@ -1,6 +1,7 @@
 #include "tentacle-pseudopod.h"
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
+#include "Arduino.h"
 
 Pseudopod::Pseudopod(Tentacle &tentacle, Stream &input, Print &output) {
   pb_istream_from_stream(input, pbInput);
@@ -25,17 +26,24 @@ unsigned int Pseudopod::sendValue() {
   return messageSize;
 }
 
-void Pseudopod::readMessage() {
+ bool Pseudopod::readMessage() {
+  Serial.println("In readMessage");
   std::vector<Pin> pins;
   protobuf::TentacleMessage message = {};
 
   message.pins.funcs.decode = &Pseudopod::pinDecode;
   message.pins.arg = (void*) &pins;
-  bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &message);
 
+  Serial.println("About to decode");
+  bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &message);
+  Serial.print("topic was: ");
+  Serial.println(message.topic);
+  Serial.print("error:");
+  Serial.println(pbInput.errmsg);
+  return status;
 }
 
-Pin::Action getPinAction(protobuf::Action action) {
+Pin::Action Pseudopod::getPinAction(protobuf::Action action) {
   switch(action) {
     case protobuf::Action_digitalRead :
       return Pin::digitalRead;
@@ -68,7 +76,7 @@ Pin::Action getPinAction(protobuf::Action action) {
   }
 }
 
-protobuf::Action getProtoBufAction(Pin::Action action) {
+protobuf::Action Pseudopod::getProtoBufAction(Pin::Action action) {
   switch(action) {
     case Pin::digitalRead :
       return protobuf::Action_digitalRead;
@@ -151,17 +159,30 @@ bool Pseudopod::pinEncodeConfig(pb_ostream_t *stream, const pb_field_t *field, v
 
 bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg)
 {
+  Serial.println("I think I'm decoding some pins");
+  Serial.flush();
   std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
 
   protobuf::Pin protoBufPin;
 
+  Serial.println("Decoding a pin");
+  Serial.flush();
+
   if (!pb_decode(stream, protobuf::Pin_fields, &protoBufPin)) {
+      Serial.println("Decoding a pin wasn't successful");
+      Serial.flush();
       return false;
   }
+
+  Serial.println("Constructing a pin");
+  Serial.flush();
 
   Pin pin((int)protoBufPin.number, getPinAction(protoBufPin.action), protoBufPin.value);
 
   pins->push_back(pin);
-
+  Serial.print("The pin was:");
+  Serial.println(pin.getNumber());
+  Serial.println(pin.getAction());
+  Serial.println(pin.getValue());
   return true;
 }
