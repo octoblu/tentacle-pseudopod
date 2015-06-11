@@ -5,19 +5,17 @@
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
 
-#include "MemoryFree.h"
+/*#include "MemoryFree.h"*/
 
 #include "tentacle.h"
 #include "tentacle-arduino.h"
 #include "tentacle-pseudopod.h"
 
-#include "BufferStream.hpp"
-#include "Arduino.h"
+/*#include "BufferStream.hpp"*/
 #include <string>
 #include <EEPROM.h>
-#include "EEPROMAnything.h"
 
-Pseudopod *pseudopod;
+Pseudopod pseudopod;
 TentacleArduino  tentacle;
 
 
@@ -38,12 +36,6 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting up.");
   setupWifi();
-  pseudopod = new Pseudopod(tentacle, conn, conn);
-  std::string wow = "WOW";
-  EEPROM_writeAnything<std::string>(0,wow);
-  std::string notWow;
-  EEPROM_readAnything<std::string>(0,notWow);
-  Serial.println(notWow.c_str());
 }
 
 int freeRam ()
@@ -69,11 +61,9 @@ void loop() {
 
 void sendData() {
   //tentacle.getConfig()[2].action = Pin::digitalRead;
-  int written = pseudopod->sendValue();
+  int written = pseudopod.sendPins( tentacle.getValue(), conn );
   Serial.print(written);
   Serial.println(" bytes written.");
-  Serial.print(freeMemory());
-  Serial.print(" : ");
   Serial.print(freeRam());
   Serial.println(" bytes free");
   Serial.flush();
@@ -84,9 +74,9 @@ void readData() {
     delay(2000);
     Serial.println("DATA WAS AVAILABLE!");
     Serial.flush();
-    bool wasSuccessful = pseudopod->readMessage();
-    Serial.print("Was the topic successful?: ");
-    Serial.println(wasSuccessful);
+    TentacleMessage message = pseudopod.getMessage(conn);
+    Serial.print("How many pins did we get?");
+    Serial.println(message.getPins().size());
   }
 }
 
