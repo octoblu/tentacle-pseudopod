@@ -15,9 +15,6 @@
 #include <string>
 #include <EEPROM.h>
 
-Pseudopod pseudopod;
-TentacleArduino tentacle;
-
 
 /*char ssid[] = "octoblu-guest";
 char password[] = "octoblu1";*/
@@ -32,7 +29,8 @@ IPAddress server(192,168,0,112);
 
 int status = WL_IDLE_STATUS;
 WiFiClient conn;
-std::vector<Pin> pins;
+Pseudopod pseudopod(conn, conn);
+TentacleArduino tentacle;
 
 void setup() {
   Serial.begin(9600);
@@ -63,12 +61,13 @@ void loop() {
 }
 
 void sendData() {
-  int written = pseudopod.sendPins( tentacle.getValue(), conn );
+  int written = pseudopod.sendPins( tentacle.getValue());
   Serial.print(written);
   Serial.println(F(" bytes written."));
   Serial.print(freeRam());
   Serial.println(F(" bytes free"));
   Serial.flush();
+  delay(2000);
 }
 
 void readData() {
@@ -76,7 +75,7 @@ void readData() {
     delay(2000);
     Serial.println(F("DATA WAS AVAILABLE!"));
     Serial.flush();
-    TentacleMessage message = pseudopod.getMessage(conn);
+    TentacleMessage message = pseudopod.getMessage();
     Serial.print(F("How many pins did we get?"));
     Serial.println(message.getPins().size());
   }

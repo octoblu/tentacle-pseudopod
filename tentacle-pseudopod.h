@@ -17,12 +17,13 @@ extern "C" {
 
 class Pseudopod {
 public:
-  static size_t sendPins(const std::vector<Pin> &pins, Print &output);
-  static TentacleMessage getMessage(Stream &input);
+  Pseudopod(Stream &input, Print &output);
+  size_t sendPins(const std::vector<Pin> &pins);
+  TentacleMessage getMessage();
 
 private:
-  // pb_ostream_t pbOutput;
-  // pb_istream_t pbInput;
+  pb_ostream_t pbOutput;
+  pb_istream_t pbInput;
 
   static bool pinEncodeConfig(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
   static bool pinEncodeValue(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
