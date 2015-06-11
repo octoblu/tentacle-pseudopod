@@ -1,58 +1,46 @@
 #include "tentacle-pseudopod.h"
-#include "pb_arduino_encode.h"
-#include "pb_arduino_decode.h"
-#include "Arduino.h"
 
-//TODO: Fix THIS broken code! Should be somewhere else....
-Pseudopod::Pseudopod(Tentacle &tentacle, Stream &input, Print &output) {
-  pb_istream_from_stream(input, pbInput);
+size_t Pseudopod::sendPins(const std::vector<Pin> &pins, Print &output) {
+  pb_ostream_t pbOutput;
   pb_ostream_from_stream(output, pbOutput);
-  this->tentacle = &tentacle;
+
+  protobuf::TentacleMessage protobufMsg = {};
+
+  protobufMsg.topic = protobuf::Topic_action;
+  protobufMsg.has_topic = true;
+  protobufMsg.response = true;
+  protobufMsg.has_response = true;
+  protobufMsg.pins.funcs.encode = &Pseudopod::pinEncodeValue;
+  protobufMsg.pins.arg = (void*)&pins;
+
+  bool status = pb_encode(&pbOutput, protobuf::TentacleMessage_fields, &protobufMsg);
+  // (pbOutput.callback)(&pbOutput,{0x0},1);
+
+  return pbOutput.bytes_written;
 }
 
-unsigned int Pseudopod::sendValue(Pin *pins, int length) {
-  pbOutput.bytes_written = 0;
-  protobuf::TentacleMessage message = {};
-
-  message.topic = protobuf::Topic_action;
-  message.has_topic = true;
-  message.response = true;
-  message.has_response = true;
-  message.pins.funcs.encode = &Pseudopod::pinEncodeValue;
-
-  std::vector<Pin> values = tentacle->getValue(pins, length);
-  message.pins.arg = (void*)&values;
-  bool status = pb_encode(&pbOutput, protobuf::TentacleMessage_fields, &message);
-  (pbOutput.callback)(&pbOutput,{0x0},1);
-  unsigned int messageSize = pbOutput.bytes_written;
-  return messageSize;
-}
-
-unsigned int Pseudopod::sendValue() {
-  return sendValue(tentacle->getConfig(), tentacle->getNumPins());
-}
-
- bool Pseudopod::readMessage() {
+TentacleMessage Pseudopod::getMessage(Stream &input) {
   std::vector<Pin> pins;
-  protobuf::TentacleMessage message = {};
 
-  message.pins.funcs.decode = &Pseudopod::pinDecode;
-  message.pins.arg = (void*) &pins;
+  pb_istream_t pbInput;
+  pb_istream_from_stream(input, pbInput);
 
-  bool status = pb_decode(&pbInput, protobuf::TentacleMessage_fields, &message);
-  switch(message.topic) {
+  protobuf::TentacleMessage protobufMsg = {};
 
-    case protobuf::Topic_action:    
-      sendValue(&pins[0], pins.size());
+  protobufMsg.pins.funcs.decode = &Pseudopod::pinDecode;
+  protobufMsg.pins.arg = (void*) &pins;
+
+  bool status = pb_decode(&pbInput, protobuf::TentacleMessage_fields, &protobufMsg);
+  switch(protobufMsg.topic) {
+
+    case protobuf::Topic_action:
       Serial.println(F("Got an ACTION topic!"));
-    break;
+      return TentacleMessage(TentacleMessage::action, pins);
 
     case protobuf::Topic_config:
-      tentacle->configurePins(pins);
       Serial.println(F("Got an CONFIG topic!"));
-    break;
+      return TentacleMessage(TentacleMessage::config, pins);
   }
-  return status;
 }
 
 Pin::Action Pseudopod::getPinAction(protobuf::Action action) {
