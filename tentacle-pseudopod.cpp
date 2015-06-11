@@ -1,8 +1,14 @@
 #include "tentacle-pseudopod.h"
-
+#include "Arduino.h"
 size_t Pseudopod::sendPins(const std::vector<Pin> &pins, Print &output) {
+  Serial.println("creating protobuf stream");
+  Serial.flush();
+
   pb_ostream_t pbOutput;
   pb_ostream_from_stream(output, pbOutput);
+
+  Serial.println("created protobuf stream");
+  Serial.flush();
 
   protobuf::TentacleMessage protobufMsg = {};
 
@@ -13,8 +19,14 @@ size_t Pseudopod::sendPins(const std::vector<Pin> &pins, Print &output) {
   protobufMsg.pins.funcs.encode = &Pseudopod::pinEncodeValue;
   protobufMsg.pins.arg = (void*)&pins;
 
+  Serial.println("about to encode message");
+  Serial.flush();
+
   bool status = pb_encode(&pbOutput, protobuf::TentacleMessage_fields, &protobufMsg);
-  // (pbOutput.callback)(&pbOutput,{0x0},1);
+  (pbOutput.callback)(&pbOutput,{0x0},1);
+
+  Serial.println("encoded message");
+  Serial.flush();
 
   return pbOutput.bytes_written;
 }
