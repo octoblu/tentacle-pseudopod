@@ -164,8 +164,7 @@ bool Pseudopod::pinEncodeConfig(pb_ostream_t *stream, const pb_field_t *field, v
 }
 
 
-bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg)
-{
+bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
 
   protobuf::Pin protoBufPin;

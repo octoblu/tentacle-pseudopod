@@ -38,13 +38,6 @@ void setup() {
   setupWifi();
 }
 
-int freeRam ()
-{
-  extern int __heap_start, *__brkval;
-  int v;
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
-}
-
 void loop() {
   if (!conn.connected()) {
     Serial.print(F("I wasn't connected!"));
@@ -96,13 +89,19 @@ void readData() {
 }
 
 void connectToServer() {
+  int connectionAttempts = 0;
   Serial.println(F("Connecting to the server."));
   Serial.flush();
   while(!conn.connect(server, port)) {
+    if(connectionAttempts > 10) {
+      Serial.println(F("Still can't connect. I must have gone crazy. Rebooting"));
+      softReset();
+    }
     Serial.println(F("Can't connect to the server."));
     Serial.flush();
     conn.stop();
     delay(1000);
+    connectionAttempts++;
   }
 }
 
@@ -138,4 +137,11 @@ void setupWifi() {
 
 void softReset() {
   asm volatile ("  jmp 0");
+}
+
+int freeRam ()
+{
+  extern int __heap_start, *__brkval;
+  int v;
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
 }
