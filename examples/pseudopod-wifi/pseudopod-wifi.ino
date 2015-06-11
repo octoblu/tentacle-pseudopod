@@ -16,13 +16,13 @@
 #include <EEPROM.h>
 
 
-/*char ssid[] = "octoblu-guest";
-char password[] = "octoblu1";*/
-/*IPAddress server(172,16,42,44);*/
+char ssid[] = "octoblu-guest";
+char password[] = "octoblu1";
+IPAddress server(172,16,42,44);
 
-char ssid[] = "ROBOT-WASTELAND";
+/*char ssid[] = "ROBOT-WASTELAND";
 char password[] = "lemonade";
-IPAddress server(192,168,0,112);
+IPAddress server(192,168,0,112);*/
 
 
 #define port 8111
@@ -76,6 +76,20 @@ void readData() {
     Serial.println(F("DATA WAS AVAILABLE!"));
     Serial.flush();
     TentacleMessage message = pseudopod.getMessage();
+    std::vector<Pin> pins;
+
+    switch(message.getTopic()) {
+
+      case TentacleMessage::action:
+        pins = tentacle.getValue(message.getPins());
+        pseudopod.sendPins(pins);
+      break;
+
+      case TentacleMessage::config:
+        tentacle.configurePins(message.getPins());
+      break;
+
+    }
     Serial.print(F("How many pins did we get?"));
     Serial.println(message.getPins().size());
   }
