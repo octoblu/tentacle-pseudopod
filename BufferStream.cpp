@@ -55,7 +55,7 @@ size_t BufferStream::readBytes( uint8_t *buffer, size_t length) {
   }
 
   for(int i = 0; i < length; i++ ){
-    buffer[i] = EEPROM[i+readden];
+    buffer[i] = EEPROM.read(i+readden);
   }
 
   size_t newRead = readden + length;
@@ -74,7 +74,7 @@ size_t BufferStream::readBytes( uint8_t *buffer, size_t length) {
 size_t BufferStream::write(const uint8_t *buffer, size_t length) {
 
   for(int i = 0; i < length; i++ ){
-    EEPROM[i+written] = buffer[i];
+    EEPROM.write(i+written, buffer[i]);
   }
 
   written += length;

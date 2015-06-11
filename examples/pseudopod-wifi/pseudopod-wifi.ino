@@ -39,8 +39,8 @@ void setup() {
   Serial.println("Starting up.");
   setupWifi();
   BufferStream b = BufferStream();
-  pseudopod = new Pseudopod(tentacle, conn, b);
-  pseudopod2 = new Pseudopod(tentacle, b, conn);
+  pseudopod = new Pseudopod(conn, conn);
+  pseudopod2 = new Pseudopod(conn, b);
 
 }
 
@@ -67,7 +67,10 @@ void loop() {
 
 void sendData() {
   //tentacle.getConfig()[2].action = Pin::digitalRead;
-  int written = pseudopod->sendValue();
+  int written = pseudopod->sendValue(
+    tentacle.getValue()
+  );
+
   Serial.print(written);
   Serial.println(" bytes written.");
   Serial.print(freeMemory());
@@ -82,9 +85,12 @@ void readData() {
     delay(2000);
     Serial.println("DATA WAS AVAILABLE!");
     Serial.flush();
-    bool wasSuccessful = pseudopod2->readMessage();
+
+    std::vector<Pin> pins = pseudopod->readMessage();
+    tentacle.configurePins(pins);
+
     Serial.print("Was the topic successful?: ");
-    Serial.println(wasSuccessful);
+    Serial.println(pins.size());
   }
 }
 

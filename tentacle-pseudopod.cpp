@@ -4,13 +4,12 @@
 #include "Arduino.h"
 
 //TODO: Fix THIS broken code! Should be somewhere else....
-Pseudopod::Pseudopod(Tentacle &tentacle, Stream &input, Print &output) {
+Pseudopod::Pseudopod(Stream &input, Print &output) {
   pb_istream_from_stream(input, pbInput);
   pb_ostream_from_stream(output, pbOutput);
-  this->tentacle = &tentacle;
 }
 
-unsigned int Pseudopod::sendValue(Pin *pins, int length) {
+unsigned int Pseudopod::sendValue(std::vector<Pin> values) {
   pbOutput.bytes_written = 0;
   protobuf::TentacleMessage message = {};
 
@@ -19,8 +18,6 @@ unsigned int Pseudopod::sendValue(Pin *pins, int length) {
   message.response = true;
   message.has_response = true;
   message.pins.funcs.encode = &Pseudopod::pinEncodeValue;
-
-  std::vector<Pin> values = tentacle->getValue(pins, length);
   message.pins.arg = (void*)&values;
   bool status = pb_encode(&pbOutput, protobuf::TentacleMessage_fields, &message);
   (pbOutput.callback)(&pbOutput,{0x0},1);
@@ -28,11 +25,7 @@ unsigned int Pseudopod::sendValue(Pin *pins, int length) {
   return messageSize;
 }
 
-unsigned int Pseudopod::sendValue() {
-  return sendValue(tentacle->getConfig(), tentacle->getNumPins());
-}
-
- bool Pseudopod::readMessage() {
+ std::vector<Pin> pins Pseudopod::readMessage() {
   std::vector<Pin> pins;
   protobuf::TentacleMessage message = {};
 
@@ -40,19 +33,7 @@ unsigned int Pseudopod::sendValue() {
   message.pins.arg = (void*) &pins;
 
   bool status = pb_decode(&pbInput, protobuf::TentacleMessage_fields, &message);
-  switch(message.topic) {
-
-    case protobuf::Topic_action:    
-      sendValue(&pins[0], pins.size());
-      Serial.println(F("Got an ACTION topic!"));
-    break;
-
-    case protobuf::Topic_config:
-      tentacle->configurePins(pins);
-      Serial.println(F("Got an CONFIG topic!"));
-    break;
-  }
-  return status;
+  return pins;
 }
 
 Pin::Action Pseudopod::getPinAction(protobuf::Action action) {
