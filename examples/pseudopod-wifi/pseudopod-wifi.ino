@@ -15,9 +15,7 @@
 #include "Arduino.h"
 #include <string>
 #include <EEPROM.h>
-#include "EEPROMAnything.h"
 
-Pseudopod *pseudopod;
 TentacleArduino  tentacle;
 
 
@@ -30,20 +28,20 @@ IPAddress server(172,16,42,44);
 /*char server[] = "192.168.0.112";*/
 #define port 8111
 
+Pseudopod *pseudopod;
+Pseudopod *pseudopod2;
+
 int status = WL_IDLE_STATUS;
 WiFiClient conn;
 std::vector<Pin> pins;
-
 void setup() {
   Serial.begin(9600);
   Serial.println("Starting up.");
   setupWifi();
-  pseudopod = new Pseudopod(tentacle, conn, conn);
-  std::string wow = "WOW";
-  EEPROM_writeAnything<std::string>(0,wow);
-  std::string notWow;
-  EEPROM_readAnything<std::string>(0,notWow);
-  Serial.println(notWow.c_str());
+  BufferStream b = BufferStream();
+  pseudopod = new Pseudopod(tentacle, conn, b);
+  pseudopod2 = new Pseudopod(tentacle, b, conn);
+
 }
 
 int freeRam ()
@@ -84,7 +82,7 @@ void readData() {
     delay(2000);
     Serial.println("DATA WAS AVAILABLE!");
     Serial.flush();
-    bool wasSuccessful = pseudopod->readMessage();
+    bool wasSuccessful = pseudopod2->readMessage();
     Serial.print("Was the topic successful?: ");
     Serial.println(wasSuccessful);
   }

@@ -5,7 +5,7 @@
 
 class BufferStream : public Stream {
   public:
-    BufferStream(uint8_t *buffer, int bufferLength);
+    BufferStream();
     void setup();
     int available();
     int read();
@@ -24,8 +24,7 @@ class BufferStream : public Stream {
     size_t write(const uint8_t *buffer, size_t length);
     size_t write(const uint8_t val);
 
-  private:
-    uint8_t *buffer;
+  private:    
     int readden; //I know. Read is a verb and a noun. deal with it.
     int written;
     int bufferLength;

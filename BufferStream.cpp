@@ -1,8 +1,7 @@
 #include "BufferStream.hpp"
-
-BufferStream::BufferStream(uint8_t *buffer, int bufferLength) {
-  this->buffer = buffer;
-  this->bufferLength = bufferLength;
+#include <EEPROM.h>
+BufferStream::BufferStream() {
+  this->bufferLength = EEPROM.end();
   this->readden = 0;
   this->written = 0;
 }
@@ -20,11 +19,11 @@ int BufferStream::read() {
     return -1;
   }
 
-  return buffer[readden++];
+  return EEPROM[readden++];
 }
 
 int BufferStream::peek() {
-  return buffer[readden];
+  return EEPROM[readden];
 }
 
 void BufferStream::flush() {
@@ -55,7 +54,10 @@ size_t BufferStream::readBytes( uint8_t *buffer, size_t length) {
     return 0;
   }
 
-  memcpy(buffer, &this->buffer[readden], length);
+  for(int i = 0; i < length; i++ ){
+    buffer[i] = EEPROM[i+readden];
+  }
+
   size_t newRead = readden + length;
   size_t written = length;
 
@@ -70,7 +72,10 @@ size_t BufferStream::readBytes( uint8_t *buffer, size_t length) {
 }
 
 size_t BufferStream::write(const uint8_t *buffer, size_t length) {
-  memcpy(&this->buffer[written], buffer, length);
+
+  for(int i = 0; i < length; i++ ){
+    EEPROM[i+written] = buffer[i];
+  }
 
   written += length;
 
