@@ -11,8 +11,6 @@
 #include "tentacle-arduino.h"
 #include "tentacle-pseudopod.h"
 
-#include "Arduino.h"
-
 /*#include "BufferStream.hpp"*/
 #include <string>
 #include <EEPROM.h>
@@ -56,54 +54,38 @@ void loop() {
 }
 
 void sendData() {
-  delay(2000);
   int written = pseudopod.sendPins( tentacle.getValue());
   Serial.print(written);
   Serial.println(F(" bytes written."));
   Serial.print(freeRam());
   Serial.println(F(" bytes free"));
   Serial.flush();
+  delay(2000);
 }
 
 void readData() {
-  if(conn.available()) {
-    Serial.print(F("DATA WAS AVAILABLE!"));
-    Serial.println(conn.available());
+  while (conn.available()) {
+    delay(2000);
+    Serial.println(F("DATA WAS AVAILABLE!"));
     Serial.flush();
-    size_t size = conn.available()-1;
-    uint8_t buffer[size];
-    conn.readBytes(buffer, size);
-    pseudopod.pbInput = pb_istream_from_buffer(buffer, size);
     TentacleMessage message = pseudopod.getMessage();
-
     std::vector<Pin> pins;
 
     switch(message.getTopic()) {
 
       case TentacleMessage::action:
-        Serial.println("Doing an action!");
         pins = tentacle.getValue(message.getPins());
         pseudopod.sendPins(pins);
       break;
 
       case TentacleMessage::config:
-        Serial.println("Doing a config!");
         tentacle.configurePins(message.getPins());
       break;
 
     }
-    Serial.print(F("How many pins did we get? "));
+    Serial.print(F("How many pins did we get?"));
     Serial.println(message.getPins().size());
-
   }
-  /*while (conn.available()) {
-    /*delay(2000);
-
-
-    conn.flush();
-
-
-  }*/
 }
 
 void connectToServer() {
