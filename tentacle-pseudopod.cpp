@@ -20,12 +20,10 @@ size_t Pseudopod::sendPins(const std::vector<Pin> &pins) {
   Serial.println("about to encode message");
   Serial.flush();
 
-  bool status = pb_encode(&pbOutput, protobuf::TentacleMessage_fields, &protobufMsg);
-  (pbOutput.callback)(&pbOutput,{0x0},1);
-
+  bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &protobufMsg);
+  //(pbOutput.callback)(&pbOutput,{0x0},1);
   Serial.println("encoded message");
   Serial.flush();
-
   return pbOutput.bytes_written;
 }
 
@@ -37,7 +35,7 @@ TentacleMessage Pseudopod::getMessage() {
   protobufMsg.pins.funcs.decode = &Pseudopod::pinDecode;
   protobufMsg.pins.arg = (void*) &pins;
 
-  bool status = pb_decode(&pbInput, protobuf::TentacleMessage_fields, &protobufMsg);
+  bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &protobufMsg);
   switch(protobufMsg.topic) {
 
     case protobuf::Topic_action:
@@ -168,10 +166,13 @@ bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **
   std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
 
   protobuf::Pin protoBufPin;
-
-  if (!pb_decode(stream, protobuf::Pin_fields, &protoBufPin)) {
+  if (!pb_decode_delimited(stream, protobuf::Pin_fields, &protoBufPin)) {
+      Serial.println("Suck it human");
+      Serial.println(stream->errmsg);
       return false;
   }
+
+  // Serial.println("Ok I got a pin! Woot woot");
 
   Pin pin((int)protoBufPin.number, getPinAction(protoBufPin.action), protoBufPin.value);
 

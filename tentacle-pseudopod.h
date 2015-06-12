@@ -21,7 +21,7 @@ public:
   size_t sendPins(const std::vector<Pin> &pins);
   TentacleMessage getMessage();
 
-private:
+// private:
   pb_ostream_t pbOutput;
   pb_istream_t pbInput;
 
