@@ -1,6 +1,6 @@
 #include "tentacle-pseudopod.h"
-#include "Arduino.h"
-
+//#include "Arduino.h"
+//#include "//Serial.h"
 Pseudopod::Pseudopod(Stream &input, Print &output) {
   pb_ostream_from_stream(output, pbOutput);
   pb_istream_from_stream(input, pbInput);
@@ -17,13 +17,13 @@ size_t Pseudopod::sendPins(const std::vector<Pin> &pins) {
   protobufMsg.pins.funcs.encode = &Pseudopod::pinEncodeValue;
   protobufMsg.pins.arg = (void*)&pins;
 
-  Serial.println("about to encode message");
-  Serial.flush();
+  // //Serial.println("about to encode message");
+  // //Serial.flush();
 
   bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &protobufMsg);
   //(pbOutput.callback)(&pbOutput,{0x0},1);
-  Serial.println("encoded message");
-  Serial.flush();
+  // //Serial.println("encoded message");
+  // //Serial.flush();
   return pbOutput.bytes_written;
 }
 
@@ -39,11 +39,11 @@ TentacleMessage Pseudopod::getMessage() {
   switch(protobufMsg.topic) {
 
     case protobuf::Topic_action:
-      Serial.println(F("Got an ACTION topic!"));
+      //Serial.println(F("Got an ACTION topic!"));
       return TentacleMessage(TentacleMessage::action, pins);
 
     case protobuf::Topic_config:
-      Serial.println(F("Got an CONFIG topic!"));
+      //Serial.println(F("Got an CONFIG topic!"));
       return TentacleMessage(TentacleMessage::config, pins);
   }
 }
@@ -123,8 +123,11 @@ bool Pseudopod::pinEncodeValue(pb_ostream_t *stream, const pb_field_t *field, vo
     protobuf::Pin protoBufPin;
 
     protoBufPin.number = pin.getNumber();
+    protoBufPin.has_number = true;
+
     protoBufPin.value = pin.getValue();
     protoBufPin.has_value = true;
+
     if (!pb_encode_tag_for_field(stream, field)) {
       return false;
     }
@@ -166,13 +169,13 @@ bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **
   std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
 
   protobuf::Pin protoBufPin;
-  if (!pb_decode_delimited(stream, protobuf::Pin_fields, &protoBufPin)) {
-      Serial.println("Suck it human");
-      Serial.println(stream->errmsg);
+  if (!pb_decode(stream, protobuf::Pin_fields, &protoBufPin)) {
+      //Serial.println("Suck it human");
+      //Serial.println(stream->errmsg);
       return false;
   }
 
-  // Serial.println("Ok I got a pin! Woot woot");
+  // //Serial.println("Ok I got a pin! Woot woot");
 
   Pin pin((int)protoBufPin.number, getPinAction(protoBufPin.action), protoBufPin.value);
 
