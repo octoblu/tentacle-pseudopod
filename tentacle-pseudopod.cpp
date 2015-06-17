@@ -10,7 +10,7 @@ size_t Pseudopod::sendPins(const std::vector<Pin> &pins) {
   pbOutput.bytes_written = 0;
 
   protobuf::TentacleMessage protobufMsg = {};
-  protobufMsg.topic = protobuf::Topic_action;
+  protobufMsg.topic = protobuf::TentacleMessageTopic_action;
   protobufMsg.has_topic = true;
   protobufMsg.response = true;
   protobufMsg.has_response = true;
@@ -28,16 +28,27 @@ size_t Pseudopod::sendPins(const std::vector<Pin> &pins) {
 }
 
 size_t Pseudopod::authenticate(const std::string &uuid, const std::string &token) {
-  // pbOutput.bytes_written = 0;
-  //
-  // protobuf::MeshbluAuthentication protobufMsg = {};
-  // protobufMsg.uuid = uuid.c_str();
-  // protobufMsg.has_uuid = true;
-  // protobufMsg.token = token.c_str();
-  // protobufMsg.token_uuid = true;
-  // bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &protobufMsg);
-  //
-  // return pbOutput.bytes_written;
+  pbOutput.bytes_written = 0;
+
+  protobuf::TentacleMessage protobufMsg = {};
+  protobufMsg.topic = protobuf::TentacleMessageTopic_authentication;
+  protobufMsg.has_topic = true;
+  protobufMsg.authentication = {};
+  protobufMsg.has_authentication = true;
+
+  if (uuid.length()<37 && uuid.length()!=0) {
+    uuid.copy(protobufMsg.authentication.uuid, uuid.length());
+    protobufMsg.authentication.has_uuid = true;
+  }
+
+  if (token.length()<41 && token.length()!=0) {
+    token.copy(protobufMsg.authentication.token, token.length());
+    protobufMsg.authentication.has_token = true;
+  }
+
+  bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &protobufMsg);
+
+  return pbOutput.bytes_written;
 }
 
 size_t Pseudopod::registerDevice() {
@@ -60,11 +71,11 @@ TentacleMessage Pseudopod::getMessage() {
   bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &protobufMsg);
   switch(protobufMsg.topic) {
 
-    case protobuf::Topic_action:
+    case protobuf::TentacleMessageTopic_action:
       //Serial.println(F("Got an ACTION topic!"));
       return TentacleMessage(TentacleMessage::action, pins);
 
-    case protobuf::Topic_config:
+    case protobuf::TentacleMessageTopic_config:
       //Serial.println(F("Got an CONFIG topic!"));
       return TentacleMessage(TentacleMessage::config, pins);
   }

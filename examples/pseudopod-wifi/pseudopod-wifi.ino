@@ -14,15 +14,21 @@
 /*#include "BufferStream.hpp"*/
 #include <string>
 #include <EEPROM.h>
+#include <vector>
+#include "pins.hpp"
+#define DELAY 10000
 
-
-char ssid[] = "octoblu-guest";
+/*char ssid[] = "octoblu-guest";
 char password[] = "octoblu1";
-IPAddress server(172,16,42,4);
+IPAddress server(172,16,42,4);*/
 
-/*char ssid[] = "ROBOT-WASTELAND";
+char ssid[]     = "Robot Outpost";
 char password[] = "lemonade";
-IPAddress server(192,168,0,112);*/
+
+static const char uuid[]  = "b9944342-b8c7-4ca6-9d3e-074eb4706264";
+static const char token[] = "6d1f0dd95bf0dc0beb64ab7252152de6a2c08583";
+
+IPAddress server(192,168,43,30);
 
 
 #define port 8111
@@ -40,46 +46,52 @@ void setup() {
 
 void loop() {
   if (!conn.connected()) {
-    Serial.print(F("I wasn't connected!"));
+    Serial.println(F("No connection!"));
     Serial.flush();
     conn.stop();
     connectToServer();
   }
-  Serial.print(F("Number of Pins:"));
-  Serial.println(tentacle.getNumPins());
-  Serial.println(F("writing"));
-  Serial.flush();
   sendData();
   readData();
 }
 
 void sendData() {
-  int written = pseudopod.sendPins( tentacle.getValue());
+  delay(DELAY);
+
+  Serial.println(F("writing"));
+  Serial.flush();
+/*
+  std::vector<Pin> pins;
+  for(int i = 0; i < 20; i++) {
+    pins.push_back(Pin(i, Pin::digitalRead, 0));
+  }
+*/
+  size_t written = pseudopod.sendPins(*tentacle.getValue());
   Serial.print(written);
   Serial.println(F(" bytes written."));
   Serial.print(freeRam());
   Serial.println(F(" bytes free"));
   Serial.flush();
-  delay(2000);
 }
 
 void readData() {
   while (conn.available()) {
-    delay(2000);
+    delay(DELAY);
     Serial.println(F("DATA WAS AVAILABLE!"));
     Serial.flush();
     TentacleMessage message = pseudopod.getMessage();
+    std::vector<Pin> msgPins = message.getPins();
     std::vector<Pin> pins;
 
     switch(message.getTopic()) {
 
       case TentacleMessage::action:
-        pins = tentacle.getValue(message.getPins());
+        pins = *tentacle.getValue(&msgPins);
         pseudopod.sendPins(pins);
       break;
 
       case TentacleMessage::config:
-        tentacle.configurePins(message.getPins());
+        tentacle.configurePins(msgPins);
       break;
 
     }
@@ -95,6 +107,8 @@ void connectToServer() {
   while(!conn.connect(server, port)) {
     if(connectionAttempts > 10) {
       Serial.println(F("Still can't connect. I must have gone crazy. Rebooting"));
+      Serial.flush();
+
       softReset();
     }
     Serial.println(F("Can't connect to the server."));
@@ -103,6 +117,10 @@ void connectToServer() {
     delay(1000);
     connectionAttempts++;
   }
+  size_t authSize = pseudopod.authenticate(uuid, token);
+  Serial.print(authSize);
+  Serial.println(F(" bytes written for authentication"));
+  Serial.flush();
 }
 
 void setupWifi() {
@@ -131,8 +149,6 @@ void setupWifi() {
   Serial.println(F(" dBm"));
 
   Serial.flush();
-
-  connectToServer();
 }
 
 void softReset() {
