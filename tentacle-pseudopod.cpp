@@ -1,12 +1,12 @@
 #include "tentacle-pseudopod.h"
-//#include "Arduino.h"
+#include "Arduino.h"
 //#include "//Serial.h"
 Pseudopod::Pseudopod(Stream &input, Print &output) {
   pb_ostream_from_stream(output, pbOutput);
   pb_istream_from_stream(input, pbInput);
 }
 
-size_t Pseudopod::sendPins(const std::vector<Pin> &pins) {
+size_t Pseudopod::sendPins(const Tentacle &tentacle) {
   pbOutput.bytes_written = 0;
 
   protobuf::TentacleMessage protobufMsg = {};
@@ -14,27 +14,28 @@ size_t Pseudopod::sendPins(const std::vector<Pin> &pins) {
   protobufMsg.has_topic = true;
   protobufMsg.response = true;
   protobufMsg.has_response = true;
-  protobufMsg.pins.funcs.encode = &Pseudopod::pinEncodeValue;
-  protobufMsg.pins.arg = (void*)&pins;
+  protobufMsg.pins.funcs.encode = &Pseudopod::pinEncode;
+  protobufMsg.pins.arg = (void*)&tentacle;
 
-  // //Serial.println("about to encode message");
-  // //Serial.flush();
+  Serial.println("about to encode message");
+  Serial.flush();
 
   bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &protobufMsg);
-  //(pbOutput.callback)(&pbOutput,{0x0},1);
-  // //Serial.println("encoded message");
-  // //Serial.flush();
+
+  Serial.println("encoded message");
+  Serial.flush();
+
   return pbOutput.bytes_written;
 }
 
-size_t Pseudopod::authenticate(const std::string &uuid, const std::string &token) {
+size_t Pseudopod::authenticate(const char *uuid, const char *token) {
   Serial.print(F("uuid in string:\t"));
-  Serial.println(uuid.c_str());
+  Serial.println(uuid);
 
   Serial.print(F("token in string:\t"));
-  Serial.println(token.c_str());
+  Serial.println(token);
   Serial.flush();
-  
+
   pbOutput.bytes_written = 0;
 
   protobuf::TentacleMessage protobufMsg = {};
@@ -43,15 +44,12 @@ size_t Pseudopod::authenticate(const std::string &uuid, const std::string &token
   protobufMsg.authentication = {};
   protobufMsg.has_authentication = true;
 
-  if (uuid.length()<37 && uuid.length()!=0) {
-    uuid.copy(protobufMsg.authentication.uuid, uuid.length());
-    protobufMsg.authentication.has_uuid = true;
-  }
+  strncpy(protobufMsg.authentication.uuid, uuid, 36);
+  protobufMsg.authentication.has_uuid = true;
 
-  if (token.length()<41 && token.length()!=0) {
-    token.copy(protobufMsg.authentication.token, token.length());
-    protobufMsg.authentication.has_token = true;
-  }
+  strncpy(protobufMsg.authentication.token, token, 40);
+  protobufMsg.authentication.has_token = true;
+
   Serial.print(F("uuid:\t"));
   Serial.println(protobufMsg.authentication.uuid);
 
@@ -73,8 +71,8 @@ size_t Pseudopod::registerDevice() {
   // return pbOutput.bytes_written;
 }
 
-TentacleMessage Pseudopod::getMessage() {
-  std::vector<Pin> pins;
+size_t Pseudopod::processMessage(const Tentacle &tentacle) {
+  Pin pins[tentacle.getNumPins()];
 
   protobuf::TentacleMessage protobufMsg = {};
 
@@ -85,13 +83,18 @@ TentacleMessage Pseudopod::getMessage() {
   switch(protobufMsg.topic) {
 
     case protobuf::TentacleMessageTopic_action:
-      //Serial.println(F("Got an ACTION topic!"));
-      return TentacleMessage(TentacleMessage::action, pins);
+      Serial.println(F("Got an ACTION topic!"));
+
+    break;
 
     case protobuf::TentacleMessageTopic_config:
-      //Serial.println(F("Got an CONFIG topic!"));
-      return TentacleMessage(TentacleMessage::config, pins);
+      Serial.println(F("Got an CONFIG topic!"));
+
+    break;
+
   }
+
+  return 0;
 }
 
 Pin::Action Pseudopod::getPinAction(protobuf::Action action) {
@@ -160,12 +163,14 @@ protobuf::Action Pseudopod::getProtoBufAction(Pin::Action action) {
   }
 }
 
-bool Pseudopod::pinEncodeValue(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
+bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
 
-  std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
+  Tentacle *tentacle = (Tentacle*) *arg;
   bool fail = false;
-  for(int i = 0; i < pins->size(); i++) {
-    Pin pin = pins->at(i);
+  for(int i = 0; i < tentacle->getNumPins(); i++) {
+
+    Pin pin = tentacle->getValue(i);
+
     protobuf::Pin protoBufPin;
 
     protoBufPin.number = pin.getNumber();
@@ -182,49 +187,22 @@ bool Pseudopod::pinEncodeValue(pb_ostream_t *stream, const pb_field_t *field, vo
       return false;
     }
   }
-  return true;
-}
 
-bool Pseudopod::pinEncodeConfig(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
-
-  std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
-  bool fail = false;
-  for(int i = 0; i < pins->size(); i++) {
-    Pin pin = pins->at(i);
-    protobuf::Pin protoBufPin;
-
-    protoBufPin.number = pin.getNumber();
-    protoBufPin.action = getProtoBufAction(pin.getAction());
-    protoBufPin.has_action = true;
-    protoBufPin.pullup = pin.getPullup();
-    protoBufPin.has_pullup = true;
-
-    if (!pb_encode_tag_for_field(stream, field)) {
-      return false;
-    }
-
-    if(!pb_encode_submessage(stream, protobuf::Pin_fields, &protoBufPin)) {
-      return false;
-    }
-  }
   return true;
 }
 
 
 bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  std::vector<Pin> *pins = (std::vector<Pin>*) *arg;
+  Pin *pins = (Pin*) *arg;
+  protobuf::Pin protoBufPin = {};
 
-  protobuf::Pin protoBufPin;
   if (!pb_decode(stream, protobuf::Pin_fields, &protoBufPin)) {
-      //Serial.println("Suck it human");
-      //Serial.println(stream->errmsg);
-      return false;
+    return false;
   }
-
-  // //Serial.println("Ok I got a pin! Woot woot");
 
   Pin pin((int)protoBufPin.number, getPinAction(protoBufPin.action), protoBufPin.value);
 
-  pins->push_back(pin);
+  pins[pin.getNumber()] = pin;
+
   return true;
 }

@@ -1,6 +1,7 @@
 #include <SPI.h>
 #include <WiFi.h>
-#include <StandardCplusplus.h>
+
+#include "Arduino.h"
 
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
@@ -11,12 +12,12 @@
 #include "tentacle-arduino.h"
 #include "tentacle-pseudopod.h"
 
+
+
 /*#include "BufferStream.hpp"*/
-#include <string>
 #include <EEPROM.h>
-#include <vector>
 #include "pins.hpp"
-#define DELAY 10000
+#define DELAY 2000
 
 /*char ssid[] = "octoblu-guest";
 char password[] = "octoblu1";
@@ -71,13 +72,8 @@ void sendData() {
 
   Serial.println(F("writing"));
   Serial.flush();
-/*
-  std::vector<Pin> pins;
-  for(int i = 0; i < 20; i++) {
-    pins.push_back(Pin(i, Pin::digitalRead, 0));
-  }
-*/
-  size_t written = pseudopod.sendPins(*tentacle.getValue());
+
+  size_t written = pseudopod.sendPins(tentacle);
   Serial.print(written);
   Serial.println(F(" bytes written."));
   Serial.print(freeRam());
@@ -90,24 +86,7 @@ void readData() {
   while (conn.available()) {
     Serial.println(F("DATA WAS AVAILABLE!"));
     Serial.flush();
-    TentacleMessage message = pseudopod.getMessage();
-    std::vector<Pin> msgPins = message.getPins();
-    std::vector<Pin> pins;
-
-    switch(message.getTopic()) {
-
-      case TentacleMessage::action:
-        pins = *tentacle.getValue(&msgPins);
-        pseudopod.sendPins(pins);
-      break;
-
-      case TentacleMessage::config:
-        tentacle.configurePins(msgPins);
-      break;
-
-    }
-    Serial.print(F("How many pins did we get?"));
-    Serial.println(message.getPins().size());
+    pseudopod.processMessage(tentacle);
   }
 }
 

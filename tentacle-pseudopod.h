@@ -6,33 +6,28 @@ extern "C" {
 #include <pb_decode.h>
 }
 
-#include <vector>
-#include <string>
-
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
-#include "Arduino.h"
 
-#include "tentacle-message.h"
+#include "tentacle.h"
 #include "Stream.h"
 #include "proto-buf.hpp"
 
 class Pseudopod {
 public:
   Pseudopod(Stream &input, Print &output);
-  size_t sendPins(const std::vector<Pin> &pins);
 
-  size_t authenticate(const std::string &uuid, const std::string &token);
+  size_t sendPins(const Tentacle &tentacle);
+  size_t processMessage(const Tentacle &tentacle);
+
+  size_t authenticate(const char* uuid, const char *token);
   size_t registerDevice();
-
-  TentacleMessage getMessage();
 
 // private:
   pb_ostream_t pbOutput;
   pb_istream_t pbInput;
 
-  static bool pinEncodeConfig(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
-  static bool pinEncodeValue(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
+  static bool pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
   static bool pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg);
   static protobuf::Action getProtoBufAction(Pin::Action action);
   static Pin::Action getPinAction(protobuf::Action action);
