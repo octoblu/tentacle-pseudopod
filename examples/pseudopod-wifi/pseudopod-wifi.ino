@@ -41,16 +41,27 @@ TentacleArduino tentacle;
 void setup() {
   Serial.begin(9600);
   Serial.println(F("Starting up."));
+
+  printCredentials(1);
+
   setupWifi();
+  connectToServer();
+  delay(DELAY);
 }
 
 void loop() {
+  printCredentials(7);
+
   if (!conn.connected()) {
+    conn.stop();
     Serial.println(F("No connection!"));
     Serial.flush();
-    conn.stop();
+
     connectToServer();
+
   }
+  printCredentials(8);
+
   sendData();
   readData();
 }
@@ -75,8 +86,8 @@ void sendData() {
 }
 
 void readData() {
+  delay(DELAY);
   while (conn.available()) {
-    delay(DELAY);
     Serial.println(F("DATA WAS AVAILABLE!"));
     Serial.flush();
     TentacleMessage message = pseudopod.getMessage();
@@ -101,10 +112,13 @@ void readData() {
 }
 
 void connectToServer() {
+  printCredentials(3);
+
   int connectionAttempts = 0;
   Serial.println(F("Connecting to the server."));
   Serial.flush();
   while(!conn.connect(server, port)) {
+    printCredentials(4);
     if(connectionAttempts > 10) {
       Serial.println(F("Still can't connect. I must have gone crazy. Rebooting"));
       Serial.flush();
@@ -117,13 +131,17 @@ void connectToServer() {
     delay(1000);
     connectionAttempts++;
   }
+
+  printCredentials(2);
+
   size_t authSize = pseudopod.authenticate(uuid, token);
   Serial.print(authSize);
   Serial.println(F(" bytes written for authentication"));
-  Serial.flush();
+  /*Serial.flush();*/
 }
 
 void setupWifi() {
+  printCredentials(5);
   int status = WL_IDLE_STATUS;
 
   while (status != WL_CONNECTED) {
@@ -149,10 +167,22 @@ void setupWifi() {
   Serial.println(F(" dBm"));
 
   Serial.flush();
+  printCredentials(6);
 }
 
 void softReset() {
   asm volatile ("  jmp 0");
+}
+
+void printCredentials(int marker) {
+  Serial.println(marker);
+
+  Serial.print(F("uuid in char[]:\t"));
+  Serial.println(uuid);
+
+  Serial.print(F("token in char[]:\t"));
+  Serial.println(token);
+  Serial.flush();
 }
 
 int freeRam ()

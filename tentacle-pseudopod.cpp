@@ -28,6 +28,13 @@ size_t Pseudopod::sendPins(const std::vector<Pin> &pins) {
 }
 
 size_t Pseudopod::authenticate(const std::string &uuid, const std::string &token) {
+  Serial.print(F("uuid in string:\t"));
+  Serial.println(uuid.c_str());
+
+  Serial.print(F("token in string:\t"));
+  Serial.println(token.c_str());
+  Serial.flush();
+  
   pbOutput.bytes_written = 0;
 
   protobuf::TentacleMessage protobufMsg = {};
@@ -45,7 +52,13 @@ size_t Pseudopod::authenticate(const std::string &uuid, const std::string &token
     token.copy(protobufMsg.authentication.token, token.length());
     protobufMsg.authentication.has_token = true;
   }
+  Serial.print(F("uuid:\t"));
+  Serial.println(protobufMsg.authentication.uuid);
 
+  Serial.print(F("token:\t"));
+  Serial.println(protobufMsg.authentication.token);
+
+  Serial.flush();
   bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &protobufMsg);
 
   return pbOutput.bytes_written;
