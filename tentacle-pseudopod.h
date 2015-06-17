@@ -7,6 +7,8 @@ extern "C" {
 }
 
 #include <vector>
+#include <string>
+
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
 #include "Arduino.h"
@@ -19,6 +21,10 @@ class Pseudopod {
 public:
   Pseudopod(Stream &input, Print &output);
   size_t sendPins(const std::vector<Pin> &pins);
+
+  size_t authenticate(const std::string &uuid, const std::string &token);
+  size_t registerDevice();
+
   TentacleMessage getMessage();
 
 // private:

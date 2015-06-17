@@ -18,7 +18,7 @@
 
 char ssid[] = "octoblu-guest";
 char password[] = "octoblu1";
-IPAddress server(172,16,42,44);
+IPAddress server(172,16,42,4);
 
 /*char ssid[] = "ROBOT-WASTELAND";
 char password[] = "lemonade";

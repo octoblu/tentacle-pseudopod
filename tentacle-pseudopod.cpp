@@ -27,6 +27,28 @@ size_t Pseudopod::sendPins(const std::vector<Pin> &pins) {
   return pbOutput.bytes_written;
 }
 
+size_t Pseudopod::authenticate(const std::string &uuid, const std::string &token) {
+  // pbOutput.bytes_written = 0;
+  //
+  // protobuf::MeshbluAuthentication protobufMsg = {};
+  // protobufMsg.uuid = uuid.c_str();
+  // protobufMsg.has_uuid = true;
+  // protobufMsg.token = token.c_str();
+  // protobufMsg.token_uuid = true;
+  // bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &protobufMsg);
+  //
+  // return pbOutput.bytes_written;
+}
+
+size_t Pseudopod::registerDevice() {
+  // pbOutput.bytes_written = 0;
+  //
+  // protobuf::MeshbluAuthentication protobufMsg = {};
+  // bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &protobufMsg);
+  //
+  // return pbOutput.bytes_written;
+}
+
 TentacleMessage Pseudopod::getMessage() {
   std::vector<Pin> pins;
 
