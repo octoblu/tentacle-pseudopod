@@ -6,6 +6,7 @@ Testing
 #Protocol buffer generated files
 *.proto
 *.pb*
+*.options
 
 # Compiled Object files
 *.slo
