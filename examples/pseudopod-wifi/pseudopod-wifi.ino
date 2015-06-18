@@ -19,17 +19,17 @@
 #include "pins.hpp"
 #define DELAY 2000
 
-/*char ssid[] = "octoblu-guest";
+char ssid[] = "octoblu-guest";
 char password[] = "octoblu1";
-IPAddress server(172,16,42,4);*/
+IPAddress server(172,16,42,44);
 
-char ssid[]     = "Robot Outpost";
-char password[] = "lemonade";
+/*char ssid[]     = "Robot Outpost";
+char password[] = "lemonade";*/
 
 static const char uuid[]  = "b9944342-b8c7-4ca6-9d3e-074eb4706264";
 static const char token[] = "6d1f0dd95bf0dc0beb64ab7252152de6a2c08583";
 
-IPAddress server(192,168,43,201);
+/*IPAddress server(192,168,43,30);*/
 
 
 #define port 8111
@@ -43,7 +43,6 @@ void setup() {
   Serial.begin(9600);
   Serial.println(F("Starting up."));
 
-  printCredentials(1);
 
   setupWifi();
   connectToServer();
@@ -51,6 +50,7 @@ void setup() {
 }
 
 void loop() {
+
   if (!conn.connected()) {
     conn.stop();
     Serial.println(F("No connection!"));
@@ -59,9 +59,9 @@ void loop() {
     connectToServer();
 
   }
+
   sendData();
   readData();
-  printCredentials(100);
 }
 
 void sendData() {
@@ -88,13 +88,11 @@ void readData() {
 }
 
 void connectToServer() {
-  printCredentials(3);
 
   int connectionAttempts = 0;
   Serial.println(F("Connecting to the server."));
   Serial.flush();
   while(!conn.connect(server, port)) {
-    printCredentials(4);
     if(connectionAttempts > 10) {
       Serial.println(F("Still can't connect. I must have gone crazy. Rebooting"));
       Serial.flush();
@@ -108,7 +106,6 @@ void connectToServer() {
     connectionAttempts++;
   }
 
-  printCredentials(2);
 
   size_t authSize = pseudopod.authenticate(uuid, token);
   Serial.print(authSize);
@@ -117,7 +114,6 @@ void connectToServer() {
 }
 
 void setupWifi() {
-  printCredentials(5);
   int status = WL_IDLE_STATUS;
 
   while (status != WL_CONNECTED) {
@@ -143,22 +139,10 @@ void setupWifi() {
   Serial.println(F(" dBm"));
 
   Serial.flush();
-  printCredentials(6);
 }
 
 void softReset() {
   asm volatile ("  jmp 0");
-}
-
-void printCredentials(int marker) {
-  Serial.println(marker);
-
-  Serial.print(F("uuid in char[]:\t"));
-  Serial.println(uuid);
-
-  Serial.print(F("token in char[]:\t"));
-  Serial.println(token);
-  Serial.flush();
 }
 
 int freeRam ()

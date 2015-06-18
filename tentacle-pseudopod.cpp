@@ -72,37 +72,24 @@ size_t Pseudopod::registerDevice() {
 }
 
 size_t Pseudopod::processMessage(Tentacle &tentacle) {
-  tentacle.resetPins();
+  Pin msgPins[tentacle.getNumPins()];
 
   protobuf::TentacleMessage protobufMsg = {};
 
-  PinList pinList = { tentacle.getNumPins() };
-
   protobufMsg.pins.funcs.decode = &Pseudopod::pinDecode;
-  protobufMsg.pins.arg = (void*) &pinList;
+  protobufMsg.pins.arg = (void*) &msgPins;
 
   bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &protobufMsg);
-
-  Serial.print(F("PinList size is "));
-  Serial.print(pinList.size);
-  Serial.flush();
-
-  if (!status) {
-    Serial.println(F("DECODE FAILED!"));
-    Serial.flush();
-    pinList.clear();
-    return 0;
-  }
-
   switch(protobufMsg.topic) {
 
     case protobuf::TentacleMessageTopic_action:
       Serial.println(F("Got an ACTION topic!"));
-
+      tentacle.performActions(msgPins);
     break;
 
     case protobuf::TentacleMessageTopic_config:
       Serial.println(F("Got an CONFIG topic!"));
+      tentacle.configurePins(msgPins);
     break;
 
   }
@@ -111,79 +98,77 @@ size_t Pseudopod::processMessage(Tentacle &tentacle) {
   for(int i = 0; i < tentacle.getNumPins(); i++) {
     Pin &pin = tentacle.getPin(i);
     Serial.print("#");
-    Serial.print(pin.number);
+    Serial.print(pin.getNumber());
     Serial.print(" mode: ");
-    Serial.print(pin.action);
+    Serial.print(pin.getAction());
     Serial.print(" value: ");
-    Serial.println(pin.value);
+    Serial.println(pin.getValue());
     Serial.flush();
   }
-
-  pinList.clear();
 
   return 0;
 }
 
-Pin::Action::ActionEnum Pseudopod::getPinAction(protobuf::Action action) {
+Pin::Action Pseudopod::getPinAction(protobuf::Action action) {
   switch(action) {
     case protobuf::Action_digitalRead :
-      return Pin::Action::digitalRead;
+      return Pin::digitalRead;
 
     case protobuf::Action_digitalWrite:
-      return Pin::Action::digitalWrite;
+      return Pin::digitalWrite;
 
     case protobuf::Action_analogRead  :
-      return Pin::Action::analogRead;
+      return Pin::analogRead;
 
     case protobuf::Action_analogWrite :
-      return Pin::Action::analogWrite;
+      return Pin::analogWrite;
 
     case protobuf::Action_servoWrite  :
-      return Pin::Action::servoWrite;
+      return Pin::servoWrite;
 
     case protobuf::Action_pwmWrite    :
-      return Pin::Action::pwmWrite;
+      return Pin::pwmWrite;
 
     case protobuf::Action_i2cWrite    :
-      return Pin::Action::i2cWrite;
+      return Pin::i2cWrite;
 
     case protobuf::Action_i2cRead     :
-      return Pin::Action::i2cRead;
+      return Pin::i2cRead;
 
     case protobuf::Action_ignore      :
     default:
-      return Pin::Action::ignore;
+      return Pin::ignore;
     break;
   }
 }
 
-protobuf::Action Pseudopod::getProtoBufAction(Pin::Action::ActionEnum action) {
+protobuf::Action Pseudopod::getProtoBufAction(Pin::Action action) {
   switch(action) {
-    case Pin::Action::digitalRead :
+    case Pin::digitalRead :
       return protobuf::Action_digitalRead;
 
-    case Pin::Action::digitalWrite:
+    case Pin::digitalWrite:
       return protobuf::Action_digitalWrite;
 
-    case Pin::Action::analogRead  :
+    case Pin::analogRead  :
       return protobuf::Action_analogRead;
 
-    case Pin::Action::analogWrite :
+    case Pin::analogWrite :
       return protobuf::Action_analogWrite;
 
-    case Pin::Action::servoWrite  :
+    case Pin::servoWrite  :
       return protobuf::Action_servoWrite;
 
-    case Pin::Action::pwmWrite    :
+    case Pin::pwmWrite    :
       return protobuf::Action_pwmWrite;
 
-    case Pin::Action::i2cWrite    :
+    case Pin::i2cWrite    :
       return protobuf::Action_i2cWrite;
 
-    case Pin::Action::i2cRead     :
+    case Pin::i2cRead     :
       return protobuf::Action_i2cRead;
 
-    case Pin::Action::ignore      :
+    case Pin::ignore      :
     default:
       return protobuf::Action_ignore;
     break;
@@ -198,17 +183,26 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
 
     Pin &pin = tentacle->getPin(i);
 
-    if (pin.action == Pin::Action::ignore) {
+    if(pin.getAction() == Pin::ignore) {
       continue;
     }
 
-    protobuf::Pin protoBufPin;
+    if(pin.getAction() == Pin::digitalRead || pin.getAction() == Pin::analogRead) {
+        tentacle->performAction(pin);
+    }
 
-    protoBufPin.number = pin.number;
+    protobuf::Pin protoBufPin = {};
+
+    protoBufPin.number = pin.getNumber();
     protoBufPin.has_number = true;
 
-    protoBufPin.value = pin.value;
+    protoBufPin.value = pin.getValue();
     protoBufPin.has_value = true;
+
+    protoBufPin.action = getProtoBufAction(pin.getAction());
+    protoBufPin.has_action = true;
+
+    // protoBufPin.pullup = false;
 
     if (!pb_encode_tag_for_field(stream, field)) {
       return false;
@@ -224,7 +218,7 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
 
 
 bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  PinList *pinList = (PinList*) *arg;
+  Pin *pins = (Pin*) *arg;
 
   protobuf::Pin protoBufPin = {};
 
@@ -232,8 +226,9 @@ bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **
     return false;
   }
 
-  Pin pin = {};
-  //{(int)protoBufPin.number,getPinAction(protoBufPin.action), protoBufPin.value};
+  Pin pin((int)protoBufPin.number, getPinAction(protoBufPin.action), protoBufPin.value);
 
-  return pinList->insertPin(pin);
+  pins[pin.getNumber()] = pin;
+
+  return true;
 }
