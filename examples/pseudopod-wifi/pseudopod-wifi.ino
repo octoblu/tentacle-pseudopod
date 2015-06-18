@@ -29,7 +29,7 @@ char password[] = "lemonade";
 static const char uuid[]  = "b9944342-b8c7-4ca6-9d3e-074eb4706264";
 static const char token[] = "6d1f0dd95bf0dc0beb64ab7252152de6a2c08583";
 
-IPAddress server(192,168,43,30);
+IPAddress server(192,168,29,167);
 
 
 #define port 8111
@@ -51,8 +51,6 @@ void setup() {
 }
 
 void loop() {
-  printCredentials(7);
-
   if (!conn.connected()) {
     conn.stop();
     Serial.println(F("No connection!"));
@@ -61,10 +59,9 @@ void loop() {
     connectToServer();
 
   }
-  printCredentials(8);
-
   sendData();
   readData();
+  printCredentials(100);
 }
 
 void sendData() {

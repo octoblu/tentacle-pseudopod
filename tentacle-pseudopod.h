@@ -23,7 +23,7 @@ public:
   size_t authenticate(const char* uuid, const char *token);
   size_t registerDevice();
 
-// private:
+private:
   pb_ostream_t pbOutput;
   pb_istream_t pbInput;
 
@@ -32,4 +32,5 @@ public:
   static protobuf::Action getProtoBufAction(Pin::Action action);
   static Pin::Action getPinAction(protobuf::Action action);
 };
+
 #endif

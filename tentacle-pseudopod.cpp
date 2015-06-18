@@ -76,10 +76,24 @@ size_t Pseudopod::processMessage(Tentacle &tentacle) {
 
   protobuf::TentacleMessage protobufMsg = {};
 
+  PinList pinList = { tentacle.getNumPins() };
+
   protobufMsg.pins.funcs.decode = &Pseudopod::pinDecode;
-  protobufMsg.pins.arg = (void*) &tentacle;
+  protobufMsg.pins.arg = (void*) &pinList;
 
   bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &protobufMsg);
+
+  Serial.print("PinList size is ");
+  Serial.print(pinList.size);
+  Serial.flush();
+  
+  if (!status) {
+    Serial.println("DECODE FAILED!");
+    Serial.flush();
+    pinList.clear();
+    return 0;
+  }
+
   switch(protobufMsg.topic) {
 
     case protobuf::TentacleMessageTopic_action:
@@ -104,6 +118,8 @@ size_t Pseudopod::processMessage(Tentacle &tentacle) {
     Serial.println(pin.getValue());
     Serial.flush();
   }
+
+  pinList.clear();
 
   return 0;
 }
@@ -182,6 +198,10 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
 
     Pin &pin = tentacle->getPin(i);
 
+    if (pin.getAction() == Pin::ignore) {
+      continue;
+    }
+
     protobuf::Pin protoBufPin;
 
     protoBufPin.number = pin.getNumber();
@@ -204,7 +224,7 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
 
 
 bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  Tentacle *tentacle = (Tentacle*) *arg;
+  PinList *pinList = (PinList*) *arg;
 
   protobuf::Pin protoBufPin = {};
 
@@ -214,7 +234,5 @@ bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **
 
   Pin pin((int)protoBufPin.number, getPinAction(protoBufPin.action), protoBufPin.value);
 
-  tentacle->setPin(pin);
-
-  return true;
+  return pinList->insertPin(pin);
 }
