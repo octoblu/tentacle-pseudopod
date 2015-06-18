@@ -71,13 +71,13 @@ size_t Pseudopod::registerDevice() {
   // return pbOutput.bytes_written;
 }
 
-size_t Pseudopod::processMessage(const Tentacle &tentacle) {
-  Pin pins[tentacle.getNumPins()];
+size_t Pseudopod::processMessage(Tentacle &tentacle) {
+  tentacle.resetPins();
 
   protobuf::TentacleMessage protobufMsg = {};
 
   protobufMsg.pins.funcs.decode = &Pseudopod::pinDecode;
-  protobufMsg.pins.arg = (void*) &pins;
+  protobufMsg.pins.arg = (void*) &tentacle;
 
   bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &protobufMsg);
   switch(protobufMsg.topic) {
@@ -89,9 +89,20 @@ size_t Pseudopod::processMessage(const Tentacle &tentacle) {
 
     case protobuf::TentacleMessageTopic_config:
       Serial.println(F("Got an CONFIG topic!"));
-
     break;
 
+  }
+
+  Serial.println(F("Printing what I think my pins are: "));
+  for(int i = 0; i < tentacle.getNumPins(); i++) {
+    Pin &pin = tentacle.getPin(i);
+    Serial.print("#");
+    Serial.print(pin.getNumber());
+    Serial.print(" mode: ");
+    Serial.print(pin.getAction());
+    Serial.print(" value: ");
+    Serial.println(pin.getValue());
+    Serial.flush();
   }
 
   return 0;
@@ -169,7 +180,7 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
   bool fail = false;
   for(int i = 0; i < tentacle->getNumPins(); i++) {
 
-    Pin pin = tentacle->getValue(i);
+    Pin &pin = tentacle->getPin(i);
 
     protobuf::Pin protoBufPin;
 
@@ -193,7 +204,8 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
 
 
 bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  Pin *pins = (Pin*) *arg;
+  Tentacle *tentacle = (Tentacle*) *arg;
+
   protobuf::Pin protoBufPin = {};
 
   if (!pb_decode(stream, protobuf::Pin_fields, &protoBufPin)) {
@@ -202,7 +214,7 @@ bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **
 
   Pin pin((int)protoBufPin.number, getPinAction(protoBufPin.action), protoBufPin.value);
 
-  pins[pin.getNumber()] = pin;
+  tentacle->setPin(pin);
 
   return true;
 }
