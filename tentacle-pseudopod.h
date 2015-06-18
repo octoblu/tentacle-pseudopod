@@ -29,8 +29,8 @@ private:
 
   static bool pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
   static bool pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg);
-  static protobuf::Action getProtoBufAction(Pin::Action action);
-  static Pin::Action getPinAction(protobuf::Action action);
+  static protobuf::Action getProtoBufAction(Pin::Action::ActionEnum action);
+  static Pin::Action::ActionEnum getPinAction(protobuf::Action action);
 };
 
 #endif
