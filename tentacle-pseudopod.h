@@ -17,7 +17,7 @@ class Pseudopod {
 public:
   Pseudopod(Stream &input, Print &output);
 
-  size_t sendPins(const Tentacle &tentacle);
+  size_t sendPins(Pin *pins);
   size_t processMessage(Tentacle &tentacle);
 
   size_t authenticate(const char* uuid, const char *token);

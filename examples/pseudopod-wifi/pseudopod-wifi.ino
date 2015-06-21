@@ -19,12 +19,16 @@
 #include "pins.hpp"
 #define DELAY 2000
 
+/*//octoblu hq
 char ssid[] = "octoblu-guest";
 char password[] = "octoblu1";
-IPAddress server(172,16,42,44);
+IPAddress server(172,16,42,44);*/
 
-/*char ssid[]     = "Robot Outpost";
-char password[] = "lemonade";*/
+//home
+char ssid[] = "ROBOT-WASTELAND";
+char password[] = "lemonade";
+IPAddress server(192,168,0,112);
+
 
 static const char uuid[]  = "b9944342-b8c7-4ca6-9d3e-074eb4706264";
 static const char token[] = "6d1f0dd95bf0dc0beb64ab7252152de6a2c08583";
@@ -59,9 +63,9 @@ void loop() {
     connectToServer();
 
   }
-
-  sendData();
   readData();
+  tentacle.processPins();
+  sendData();
 }
 
 void sendData() {
@@ -70,7 +74,7 @@ void sendData() {
   Serial.println(F("writing"));
   Serial.flush();
 
-  size_t written = pseudopod.sendPins(tentacle);
+  size_t written = pseudopod.sendPins(tentacle.getPins());
   Serial.print(written);
   Serial.println(F(" bytes written."));
   Serial.print(freeRam());
@@ -93,7 +97,7 @@ void connectToServer() {
   Serial.println(F("Connecting to the server."));
   Serial.flush();
   while(!conn.connect(server, port)) {
-    if(connectionAttempts > 10) {
+    if(connectionAttempts > 5) {
       Serial.println(F("Still can't connect. I must have gone crazy. Rebooting"));
       Serial.flush();
 

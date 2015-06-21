@@ -6,7 +6,7 @@ Pseudopod::Pseudopod(Stream &input, Print &output) {
   pb_istream_from_stream(input, pbInput);
 }
 
-size_t Pseudopod::sendPins(const Tentacle &tentacle) {
+size_t Pseudopod::sendPins(Pin *pins) {
   pbOutput.bytes_written = 0;
 
   protobuf::TentacleMessage protobufMsg = {};
@@ -15,7 +15,7 @@ size_t Pseudopod::sendPins(const Tentacle &tentacle) {
   protobufMsg.response = true;
   protobufMsg.has_response = true;
   protobufMsg.pins.funcs.encode = &Pseudopod::pinEncode;
-  protobufMsg.pins.arg = (void*)&tentacle;
+  protobufMsg.pins.arg = (void*)&pins;
 
   Serial.println("about to encode message");
   Serial.flush();
@@ -84,7 +84,7 @@ size_t Pseudopod::processMessage(Tentacle &tentacle) {
 
     case protobuf::TentacleMessageTopic_action:
       Serial.println(F("Got an ACTION topic!"));
-      tentacle.performActions(msgPins);
+      tentacle.processPins(msgPins);
     break;
 
     case protobuf::TentacleMessageTopic_config:
@@ -176,19 +176,14 @@ protobuf::Action Pseudopod::getProtoBufAction(Pin::Action action) {
 }
 
 bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
-
-  Tentacle *tentacle = (Tentacle*) *arg;
+  Pin *pins = (Pin*) *arg;
   bool fail = false;
-  for(int i = 0; i < tentacle->getNumPins(); i++) {
+  for(int i = 0; i < 20; i++) {
 
-    Pin &pin = tentacle->getPin(i);
+    Pin &pin = pins[i];
 
     if(pin.getAction() == Pin::ignore) {
       continue;
-    }
-
-    if(pin.getAction() == Pin::digitalRead || pin.getAction() == Pin::analogRead) {
-        tentacle->performAction(pin);
     }
 
     protobuf::Pin protoBufPin = {};
@@ -201,8 +196,6 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
 
     protoBufPin.action = getProtoBufAction(pin.getAction());
     protoBufPin.has_action = true;
-
-    // protoBufPin.pullup = false;
 
     if (!pb_encode_tag_for_field(stream, field)) {
       return false;
