@@ -72,7 +72,7 @@ void sendData() {
   Serial.println(F("writing"));
   Serial.flush();
 
-  size_t written = pseudopod.sendPins(tentacle.getPins());
+  size_t written = pseudopod.sendPins(tentacle.getPins(), tentacle.getNumPins());
   Serial.print(written);
   Serial.println(F(" bytes written."));
   Serial.print(freeRam());

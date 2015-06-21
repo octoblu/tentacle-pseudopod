@@ -1,12 +1,16 @@
 #include "tentacle-pseudopod.h"
+#include "pin-array.h"
+#include <stddef.h>
 #include "Arduino.h"
-//#include "//Serial.h"
+
+
 Pseudopod::Pseudopod(Stream &input, Print &output) {
   pb_ostream_from_stream(output, pbOutput);
   pb_istream_from_stream(input, pbInput);
 }
 
-size_t Pseudopod::sendPins(Pin *pins) {
+size_t Pseudopod::sendPins(Pin *pins, size_t length) {
+  PinArray pinArray(pins, length);
   pbOutput.bytes_written = 0;
 
   protobuf::TentacleMessage protobufMsg = {};
@@ -15,7 +19,7 @@ size_t Pseudopod::sendPins(Pin *pins) {
   protobufMsg.response = true;
   protobufMsg.has_response = true;
   protobufMsg.pins.funcs.encode = &Pseudopod::pinEncode;
-  protobufMsg.pins.arg = (void*)&pins;
+  protobufMsg.pins.arg = (void*)&pinArray;
 
   Serial.println("about to encode message");
   Serial.flush();
@@ -176,11 +180,11 @@ protobuf::Action Pseudopod::getProtoBufAction(Pin::Action action) {
 }
 
 bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
-  Pin *pins = (Pin*) *arg;
+  PinArray *pinArray = (PinArray*) *arg;
   bool fail = false;
-  for(int i = 0; i < 20; i++) {
+  for(int i = 0; i < pinArray->length; i++) {
 
-    Pin &pin = pins[i];
+    Pin &pin = pinArray->elements[i];
 
     if(pin.getAction() == Pin::ignore) {
       continue;
