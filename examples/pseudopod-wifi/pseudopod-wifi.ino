@@ -38,8 +38,8 @@ static const char token[] = "6d1f0dd95bf0dc0beb64ab7252152de6a2c08583";
 
 int status = WL_IDLE_STATUS;
 WiFiClient conn;
-Pseudopod pseudopod(conn, conn);
 TentacleArduino tentacle;
+Pseudopod pseudopod(conn, conn, tentacle.getNumPins());
 
 void setup() {
   Serial.begin(9600);

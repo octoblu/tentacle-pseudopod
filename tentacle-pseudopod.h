@@ -17,7 +17,8 @@ extern "C" {
 
 class Pseudopod {
   public:
-    Pseudopod(Stream &input, Print &output);
+    Pseudopod(Stream &input, Print &output, size_t numPins);
+    ~Pseudopod();
 
     size_t sendPins(Pin *pins, size_t length);
     size_t processMessage(Tentacle &tentacle);
@@ -28,6 +29,10 @@ class Pseudopod {
    private:
     pb_ostream_t pbOutput;
     pb_istream_t pbInput;
+    size_t numPins;
+    Pin *pinBuffer;
+
+    void resetPinBuffer();
 
     static bool pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
     static bool pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg);

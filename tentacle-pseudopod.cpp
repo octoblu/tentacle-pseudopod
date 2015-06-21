@@ -4,9 +4,23 @@
 #include "Arduino.h"
 
 
-Pseudopod::Pseudopod(Stream &input, Print &output) {
+Pseudopod::Pseudopod(Stream &input, Print &output, size_t numPins) {
   pb_ostream_from_stream(output, pbOutput);
   pb_istream_from_stream(input, pbInput);
+
+  this->numPins = numPins;
+  pinBuffer = new Pin[numPins];
+  resetPinBuffer();
+}
+
+Pseudopod::~Pseudopod() {
+  delete[] pinBuffer;
+}
+
+void Pseudopod::resetPinBuffer() {
+  for(int i = 0; i < numPins; i++) {
+    pinBuffer[i] = Pin(i);
+  }
 }
 
 size_t Pseudopod::sendPins(Pin *pins, size_t length) {
@@ -76,18 +90,18 @@ size_t Pseudopod::registerDevice() {
 }
 
 size_t Pseudopod::processMessage(Tentacle &tentacle) {
-  Pin msgPins[tentacle.getNumPins()];
+  resetPinBuffer();
 
   protobuf::TentacleMessage protobufMsg = {};
 
   protobufMsg.pins.funcs.decode = &Pseudopod::pinDecode;
-  protobufMsg.pins.arg = (void*) &msgPins;
+  protobufMsg.pins.arg = (void*) pinBuffer;
 
   bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &protobufMsg);
 
   Serial.println(F("I received the following pins: "));
   for(int i = 0; i < tentacle.getNumPins(); i++) {
-    Pin &pin = msgPins[i];
+    Pin &pin = pinBuffer[i];
     Serial.print("#");
     Serial.print(pin.getNumber());
     Serial.print(" mode: ");
@@ -101,14 +115,13 @@ size_t Pseudopod::processMessage(Tentacle &tentacle) {
 
     case protobuf::TentacleMessageTopic_action:
       Serial.println(F("Got an ACTION topic!"));
-      tentacle.processPins(msgPins);
-
-      sendPins(msgPins, tentacle.getNumPins());
+      tentacle.processPins(pinBuffer);
+      sendPins(pinBuffer, numPin);
     break;
 
     case protobuf::TentacleMessageTopic_config:
       Serial.println(F("Got an CONFIG topic!"));
-      tentacle.configurePins(msgPins);
+      tentacle.configurePins(pinBuffer);
     break;
 
   }
@@ -193,22 +206,22 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
       continue;
     }
 
-    protobuf::Pin protoBufPin = {};
+    protobuf::Pin protobufPin = {};
 
-    protoBufPin.number = pin.getNumber();
-    protoBufPin.has_number = true;
+    protobufPin.number = pin.getNumber();
+    protobufPin.has_number = true;
 
-    protoBufPin.value = pin.getValue();
-    protoBufPin.has_value = true;
+    protobufPin.value = pin.getValue();
+    protobufPin.has_value = true;
 
-    protoBufPin.action = getProtoBufAction(pin.getAction());
-    protoBufPin.has_action = true;
+    protobufPin.action = getProtoBufAction(pin.getAction());
+    protobufPin.has_action = true;
 
     if (!pb_encode_tag_for_field(stream, field)) {
       return false;
     }
 
-    if(!pb_encode_submessage(stream, protobuf::Pin_fields, &protoBufPin)) {
+    if(!pb_encode_submessage(stream, protobuf::Pin_fields, &protobufPin)) {
       return false;
     }
   }
@@ -220,15 +233,16 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
 bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   Pin *pins = (Pin*) *arg;
 
-  protobuf::Pin protoBufPin = {};
+  protobuf::Pin protobufPin = {};
 
-  if (!pb_decode(stream, protobuf::Pin_fields, &protoBufPin)) {
+  if (!pb_decode(stream, protobuf::Pin_fields, &protobufPin)) {
     return false;
   }
 
-  Pin pin((int)protoBufPin.number, getPinAction(protoBufPin.action), protoBufPin.value);
+  Pin& pin = pins[protobufPin.number];
 
-  pins[pin.getNumber()] = pin;
+  pin.setAction( getPinAction(protobufPin.action) );
+  pin.setValue(protobufPin.value);
 
   return true;
 }
