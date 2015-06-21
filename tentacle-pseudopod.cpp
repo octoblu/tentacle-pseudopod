@@ -84,23 +84,10 @@ size_t Pseudopod::processMessage(Tentacle &tentacle) {
   protobufMsg.pins.arg = (void*) &msgPins;
 
   bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &protobufMsg);
-  switch(protobufMsg.topic) {
 
-    case protobuf::TentacleMessageTopic_action:
-      Serial.println(F("Got an ACTION topic!"));
-      tentacle.processPins(msgPins);
-    break;
-
-    case protobuf::TentacleMessageTopic_config:
-      Serial.println(F("Got an CONFIG topic!"));
-      tentacle.configurePins(msgPins);
-    break;
-
-  }
-
-  Serial.println(F("Printing what I think my pins are: "));
+  Serial.println(F("I received the following pins: "));
   for(int i = 0; i < tentacle.getNumPins(); i++) {
-    Pin &pin = tentacle.getPin(i);
+    Pin &pin = msgPins[i];
     Serial.print("#");
     Serial.print(pin.getNumber());
     Serial.print(" mode: ");
@@ -108,6 +95,22 @@ size_t Pseudopod::processMessage(Tentacle &tentacle) {
     Serial.print(" value: ");
     Serial.println(pin.getValue());
     Serial.flush();
+  }
+
+  switch(protobufMsg.topic) {
+
+    case protobuf::TentacleMessageTopic_action:
+      Serial.println(F("Got an ACTION topic!"));
+      tentacle.processPins(msgPins);
+
+      sendPins(msgPins, tentacle.getNumPins());
+    break;
+
+    case protobuf::TentacleMessageTopic_config:
+      Serial.println(F("Got an CONFIG topic!"));
+      tentacle.configurePins(msgPins);
+    break;
+
   }
 
   return 0;
