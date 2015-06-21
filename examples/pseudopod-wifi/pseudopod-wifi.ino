@@ -6,8 +6,6 @@
 #include "pb_arduino_encode.h"
 #include "pb_arduino_decode.h"
 
-/*#include "MemoryFree.h"*/
-
 #include "tentacle.h"
 #include "tentacle-arduino.h"
 #include "tentacle-pseudopod.h"
