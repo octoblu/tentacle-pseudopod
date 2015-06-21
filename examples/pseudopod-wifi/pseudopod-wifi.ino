@@ -112,7 +112,6 @@ void connectToServer() {
   size_t authSize = pseudopod.authenticate(uuid, token);
   Serial.print(authSize);
   Serial.println(F(" bytes written for authentication"));
-  /*Serial.flush();*/
 }
 
 void setupWifi() {

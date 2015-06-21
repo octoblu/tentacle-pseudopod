@@ -100,8 +100,13 @@ size_t Pseudopod::processMessage(Tentacle &tentacle) {
   bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &protobufMsg);
 
   Serial.println(F("I received the following pins: "));
-  for(int i = 0; i < tentacle.getNumPins(); i++) {
+  for(int i = 0; i < numPins; i++) {
     Pin &pin = pinBuffer[i];
+
+    if(pin.getAction() == Pin::ignore) {
+      continue;
+    }
+
     Serial.print("#");
     Serial.print(pin.getNumber());
     Serial.print(" mode: ");
@@ -115,8 +120,10 @@ size_t Pseudopod::processMessage(Tentacle &tentacle) {
 
     case protobuf::TentacleMessageTopic_action:
       Serial.println(F("Got an ACTION topic!"));
-      tentacle.processPins(pinBuffer);
-      sendPins(pinBuffer, numPin);
+      tentacle.processPins(pinBuffer, true);
+      Serial.println(F("Processed pins"));
+      delay(2000);
+      sendPins(pinBuffer, numPins);
     break;
 
     case protobuf::TentacleMessageTopic_config:
