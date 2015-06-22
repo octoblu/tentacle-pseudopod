@@ -3,9 +3,10 @@
 #include <stddef.h>
 #include "pins.hpp"
 struct PinArray {
-    PinArray (Pin* elements, size_t length);
+    PinArray (Pin* elements=NULL, size_t length=0);
     Pin* elements;
     size_t length;
+    Pin& operator[] (const int index);
 };
 
 #endif

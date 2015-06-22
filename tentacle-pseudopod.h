@@ -15,13 +15,15 @@ extern "C" {
 #include "Stream.h"
 #include "proto-buf.hpp"
 
+#include "tentacle-message.h"
+
 class Pseudopod {
   public:
     Pseudopod(Stream &input, Print &output, size_t numPins);
     ~Pseudopod();
 
     size_t sendPins(Pin *pins, size_t length);
-    size_t processMessage(Tentacle &tentacle);
+    TentacleMessage readMessage();
 
     size_t authenticate(const char* uuid, const char *token);
     size_t registerDevice();
@@ -30,7 +32,7 @@ class Pseudopod {
     pb_ostream_t pbOutput;
     pb_istream_t pbInput;
     size_t numPins;
-    Pin *pinBuffer;
+    PinArray pinBuffer;
 
     void resetPinBuffer();
 

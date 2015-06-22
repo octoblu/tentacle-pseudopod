@@ -1,6 +1,5 @@
 #include "tentacle-pseudopod.h"
 #include "pin-array.h"
-#include "tentacle-message.h"
 #include <stddef.h>
 #include "Arduino.h"
 
@@ -11,17 +10,17 @@ Pseudopod::Pseudopod(Stream &input, Print &output, size_t numPins) {
   pb_istream_from_stream(input, pbInput);
 
   this->numPins = numPins;
-  pinBuffer = new Pin[numPins];
+  pinBuffer = PinArray(new Pin[numPins], numPins);
   resetPinBuffer();
 }
 
 Pseudopod::~Pseudopod() {
-  delete[] pinBuffer;
+  delete[] pinBuffer.elements;
 }
 
 void Pseudopod::resetPinBuffer() {
   for(int i = 0; i < numPins; i++) {
-    pinBuffer[i] = Pin(i);
+    pinBuffer.elements[i] = Pin(i);
   }
 }
 
@@ -91,13 +90,13 @@ size_t Pseudopod::registerDevice() {
   // return pbOutput.bytes_written;
 }
 
-size_t Pseudopod::processMessage(Tentacle &tentacle) {
+TentacleMessage Pseudopod::readMessage() {
   resetPinBuffer();
 
   protobuf::TentacleMessage protobufMsg = {};
 
   protobufMsg.pins.funcs.decode = &Pseudopod::pinDecode;
-  protobufMsg.pins.arg = (void*) pinBuffer;
+  protobufMsg.pins.arg = (void*) &pinBuffer;
 
   bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &protobufMsg);
 
@@ -122,20 +121,21 @@ size_t Pseudopod::processMessage(Tentacle &tentacle) {
 
     case protobuf::TentacleMessageTopic_action:
       Serial.println(F("Got an ACTION topic!"));
-      tentacle.processPins(pinBuffer, true);
-      Serial.println(F("Processed pins"));
-      delay(2000);
-      sendPins(pinBuffer, numPins);
+
+      // tentacle.processPins(pinBuffer, true);
+      // Serial.println(F("Processed pins"));
+      // delay(2000);
+      // sendPins(pinBuffer, numPins);
     break;
 
     case protobuf::TentacleMessageTopic_config:
       Serial.println(F("Got an CONFIG topic!"));
-      tentacle.configurePins(pinBuffer);
+      // tentacle.configurePins(pinBuffer);
     break;
 
   }
 
-  return 0;
+  return TentacleMessage(TentacleMessage::action, pinBuffer);
 }
 
 Pin::Action Pseudopod::getPinAction(protobuf::Action action) {

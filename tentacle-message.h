@@ -20,4 +20,5 @@ private:
   const TentacleMessage::Topic *topic;
   const PinArray *pins;
 };
+
 #endif

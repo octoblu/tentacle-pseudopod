@@ -7,14 +7,12 @@
 #include "pb_arduino_decode.h"
 
 #include "tentacle.h"
+#include "tentacle-message.h"
 #include "tentacle-arduino.h"
 #include "tentacle-pseudopod.h"
 
-
-
-/*#include "BufferStream.hpp"*/
 #include <EEPROM.h>
-#include "pins.hpp"
+
 #define DELAY 2000
 
 //octoblu hq
@@ -88,7 +86,7 @@ void readData() {
   while (conn.available()) {
     Serial.println(F("DATA WAS AVAILABLE!"));
     Serial.flush();
-    pseudopod.processMessage(tentacle);
+    TentacleMessage message = pseudopod.readMessage();
   }
 }
 
