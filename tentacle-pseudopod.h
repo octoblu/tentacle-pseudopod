@@ -20,9 +20,9 @@ extern "C" {
 class Pseudopod {
   public:
     Pseudopod(Stream &input, Print &output, size_t numPins);
-    ~Pseudopod();
 
     size_t sendPins(Pin *pins, size_t length);
+    size_t sendPins(const PinArray& pinArray);
     TentacleMessage readMessage();
 
     size_t authenticate(const char* uuid, const char *token);
@@ -40,5 +40,6 @@ class Pseudopod {
     static bool pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg);
     static protobuf::Action getProtoBufAction(Pin::Action action);
     static Pin::Action getPinAction(protobuf::Action action);
+    static void printPin(Pin& pin);
 };
 #endif

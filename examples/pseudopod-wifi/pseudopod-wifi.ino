@@ -21,14 +21,14 @@ char password[] = "octoblu1";
 IPAddress server(172,16,42,44);*/
 
 //home
-/*char ssid[] = "ROBOT-WASTELAND";
+char ssid[] = "ROBOT-WASTELAND";
 char password[] = "lemonade";
-IPAddress server(192,168,0,112);*/
+IPAddress server(192,168,0,112);
 
 //Scout
-char ssid[] = "Robot-Scout";
+/*char ssid[] = "Robot-Scout";
 char password[] = "lemonade";
-IPAddress server(192,168,1,3);
+IPAddress server(192,168,1,3);*/
 
 
 static const char uuid[]  = "b9944342-b8c7-4ca6-9d3e-074eb4706264";
@@ -62,6 +62,7 @@ void loop() {
     connectToServer();
 
   }
+
   readData();
   tentacle.processPins();
   sendData();
@@ -86,8 +87,36 @@ void readData() {
   while (conn.available()) {
     Serial.println(F("DATA WAS AVAILABLE!"));
     Serial.flush();
+
     TentacleMessage message = pseudopod.readMessage();
+    processMessage(message);
   }
+}
+
+void processMessage(const TentacleMessage& message) {
+
+  if(message.getTopic() == TentacleMessage::action) {
+    delay(DELAY);
+
+    tentacle.processPins(message.getPins(), true);
+    pseudopod.sendPins(message.getPins());
+    Serial.println(F("Sent pins"));
+    Serial.flush();
+    return;
+  }
+
+  if(message.getTopic() == TentacleMessage::config) {
+    delay(DELAY);
+
+    tentacle.configurePins(message.getPins());
+    Serial.println(F("configured pins"));
+    Serial.flush();
+    return;
+  }
+
+  Serial.println(F("got some topic I don't know about. Ignoring it"));
+  Serial.flush();
+
 }
 
 void connectToServer() {
@@ -147,8 +176,7 @@ void softReset() {
   asm volatile ("  jmp 0");
 }
 
-int freeRam ()
-{
+int freeRam () {
   extern int __heap_start, *__brkval;
   int v;
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);

@@ -10,22 +10,23 @@ Pseudopod::Pseudopod(Stream &input, Print &output, size_t numPins) {
   pb_istream_from_stream(input, pbInput);
 
   this->numPins = numPins;
-  pinBuffer = PinArray(new Pin[numPins], numPins);
+  pinBuffer = PinArray(numPins);
   resetPinBuffer();
 }
 
-Pseudopod::~Pseudopod() {
-  delete[] pinBuffer.elements;
-}
-
 void Pseudopod::resetPinBuffer() {
-  for(int i = 0; i < numPins; i++) {
-    pinBuffer.elements[i] = Pin(i);
-  }
+  Serial.println(F("Resetting pin buffer"));
+  Serial.flush();
+
+  pinBuffer.resetPins();
+
+  Serial.println(F("Pin buffer reset."));
+  Serial.flush();
 }
 
 size_t Pseudopod::sendPins(Pin *pins, size_t length) {
-  PinArray pinArray(pins, length);
+  pinBuffer.update(pins, length);
+
   pbOutput.bytes_written = 0;
 
   protobuf::TentacleMessage protobufMsg = {};
@@ -34,7 +35,7 @@ size_t Pseudopod::sendPins(Pin *pins, size_t length) {
   protobufMsg.response = true;
   protobufMsg.has_response = true;
   protobufMsg.pins.funcs.encode = &Pseudopod::pinEncode;
-  protobufMsg.pins.arg = (void*)&pinArray;
+  protobufMsg.pins.arg = (void*)&pinBuffer;
 
   Serial.println("about to encode message");
   Serial.flush();
@@ -45,6 +46,10 @@ size_t Pseudopod::sendPins(Pin *pins, size_t length) {
   Serial.flush();
 
   return pbOutput.bytes_written;
+}
+
+size_t Pseudopod::sendPins(const PinArray& pinArray) {
+  return sendPins(pinArray.getElements(), pinArray.getLength());
 }
 
 size_t Pseudopod::authenticate(const char *uuid, const char *token) {
@@ -91,6 +96,9 @@ size_t Pseudopod::registerDevice() {
 }
 
 TentacleMessage Pseudopod::readMessage() {
+  Serial.println(F("Entered readMessage"));
+  Serial.flush();
+
   resetPinBuffer();
 
   protobuf::TentacleMessage protobufMsg = {};
@@ -108,34 +116,18 @@ TentacleMessage Pseudopod::readMessage() {
       continue;
     }
 
-    Serial.print("#");
-    Serial.print(pin.getNumber());
-    Serial.print(" mode: ");
-    Serial.print(pin.getAction());
-    Serial.print(" value: ");
-    Serial.println(pin.getValue());
-    Serial.flush();
+    printPin(pin);
   }
 
-  switch(protobufMsg.topic) {
-
-    case protobuf::TentacleMessageTopic_action:
-      Serial.println(F("Got an ACTION topic!"));
-
-      // tentacle.processPins(pinBuffer, true);
-      // Serial.println(F("Processed pins"));
-      // delay(2000);
-      // sendPins(pinBuffer, numPins);
-    break;
-
-    case protobuf::TentacleMessageTopic_config:
-      Serial.println(F("Got an CONFIG topic!"));
-      // tentacle.configurePins(pinBuffer);
-    break;
-
+  if(protobufMsg.topic == protobuf::TentacleMessageTopic_action) {
+    return TentacleMessage(TentacleMessage::action, pinBuffer);
   }
 
-  return TentacleMessage(TentacleMessage::action, pinBuffer);
+  if(protobufMsg.topic == protobuf::TentacleMessageTopic_config) {
+    return TentacleMessage(TentacleMessage::config, pinBuffer);
+  }
+
+  return TentacleMessage(TentacleMessage::unknown, pinBuffer);
 }
 
 Pin::Action Pseudopod::getPinAction(protobuf::Action action) {
@@ -205,11 +197,11 @@ protobuf::Action Pseudopod::getProtoBufAction(Pin::Action action) {
 }
 
 bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
-  PinArray *pinArray = (PinArray*) *arg;
+  PinArray pinArray = *((PinArray*) *arg);
   bool fail = false;
-  for(int i = 0; i < pinArray->length; i++) {
+  for(int i = 0; i < pinArray.getLength(); i++) {
 
-    Pin &pin = pinArray->elements[i];
+    Pin &pin = pinArray[i];
 
     if(pin.getAction() == Pin::ignore) {
       continue;
@@ -240,7 +232,7 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
 
 
 bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  Pin *pins = (Pin*) *arg;
+  PinArray pinArray = *((PinArray*) *arg);
 
   protobuf::Pin protobufPin = {};
 
@@ -248,10 +240,29 @@ bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **
     return false;
   }
 
-  Pin& pin = pins[protobufPin.number];
+  Serial.print("Protobuf pin: #");
+  Serial.print(protobufPin.number);
+  Serial.print("\tvalue:\t");
+  Serial.print(protobufPin.value);
+  Serial.print("\taction:\t");
+  Serial.flush();
+
+  Pin& pin = pinArray[protobufPin.number];
 
   pin.setAction( getPinAction(protobufPin.action) );
   pin.setValue(protobufPin.value);
 
+  printPin(pin);
+
   return true;
+}
+
+void Pseudopod::printPin(Pin &pin) {
+  Serial.print(F("#"));
+  Serial.print(pin.getNumber());
+  Serial.print(F("\tmode:\t"));
+  Serial.print(pin.getAction());
+  Serial.print(F("\tvalue:\t"));
+  Serial.println(pin.getValue());
+  Serial.flush();
 }

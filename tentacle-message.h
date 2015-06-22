@@ -9,7 +9,8 @@ class TentacleMessage {
 public:
   enum Topic {
     action = 0,
-    config = 1
+    config = 1,
+    unknown = 2
   };
 
   TentacleMessage(const TentacleMessage::Topic &topic, const PinArray& pins);
