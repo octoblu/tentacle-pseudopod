@@ -96,9 +96,9 @@ void readData() {
 void processMessage(const TentacleMessage& message) {
 
   if(message.getTopic() == TentacleMessage::action) {
-    delay(DELAY);
-
     tentacle.processPins(message.getPins(), true);
+
+    delay(DELAY);
     pseudopod.sendPins(message.getPins());
     Serial.println(F("Sent pins"));
     Serial.flush();
@@ -106,9 +106,8 @@ void processMessage(const TentacleMessage& message) {
   }
 
   if(message.getTopic() == TentacleMessage::config) {
-    delay(DELAY);
 
-    tentacle.configurePins(message.getPins());
+    tentacle.configurePins(message.getPins());    
     Serial.println(F("configured pins"));
     Serial.flush();
     return;
