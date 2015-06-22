@@ -1,7 +1,9 @@
 #include "tentacle-pseudopod.h"
 #include "pin-array.h"
+#include "tentacle-message.h"
 #include <stddef.h>
 #include "Arduino.h"
+
 
 
 Pseudopod::Pseudopod(Stream &input, Print &output, size_t numPins) {

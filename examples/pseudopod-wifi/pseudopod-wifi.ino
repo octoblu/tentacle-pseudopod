@@ -17,21 +17,24 @@
 #include "pins.hpp"
 #define DELAY 2000
 
-/*//octoblu hq
-char ssid[] = "octoblu-guest";
+//octoblu hq
+/*char ssid[] = "octoblu-guest";
 char password[] = "octoblu1";
 IPAddress server(172,16,42,44);*/
 
 //home
-char ssid[] = "ROBOT-WASTELAND";
+/*char ssid[] = "ROBOT-WASTELAND";
 char password[] = "lemonade";
-IPAddress server(192,168,0,112);
+IPAddress server(192,168,0,112);*/
+
+//Scout
+char ssid[] = "Robot-Scout";
+char password[] = "lemonade";
+IPAddress server(192,168,1,3);
 
 
 static const char uuid[]  = "b9944342-b8c7-4ca6-9d3e-074eb4706264";
 static const char token[] = "6d1f0dd95bf0dc0beb64ab7252152de6a2c08583";
-
-/*IPAddress server(192,168,43,30);*/
 
 
 #define port 8111

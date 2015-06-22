@@ -1,3 +1,5 @@
+#ifndef PIN_ARRAY_H
+#define PIN_ARRAY_H
 #include <stddef.h>
 #include "pins.hpp"
 struct PinArray {
@@ -5,3 +7,5 @@ struct PinArray {
     Pin* elements;
     size_t length;
 };
+
+#endif
