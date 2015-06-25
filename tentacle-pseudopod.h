@@ -6,7 +6,7 @@ extern "C" {
 #include <pb_decode.h>
 }
 
-#include <vector>
+#include "pin-buffer.h"
 #include <stddef.h>
 
 #include "pb_arduino_encode.h"
@@ -19,23 +19,24 @@ extern "C" {
 
 #include "tentacle-message.h"
 
-using namespace std;
-
 class Pseudopod {
   public:
-    Pseudopod(Stream &input, Print &output);
+    Pseudopod(Stream &input, Print &output, size_t numPins);
 
-    size_t sendPins(const vector<Pin>& pins);
+    size_t sendPins(PinBuffer& pins);
+    size_t sendPins();
 
-    TentacleMessage readMessage();
+    TentacleMessage::Topic readMessage();
 
     size_t authenticate(const char* uuid, const char *token);
     size_t registerDevice();
 
+    PinBuffer& getPinBuffer();
+
    private:
     pb_ostream_t pbOutput;
     pb_istream_t pbInput;
-    vector<Pin> pinBuffer;
+    PinBuffer* pinBuffer;
 
     static bool pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
     static bool pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg);

@@ -2,18 +2,17 @@
 #include <stddef.h>
 #include "Arduino.h"
 
-Pseudopod::Pseudopod(Stream &input, Print &output) {
+Pseudopod::Pseudopod(Stream &input, Print &output, size_t numPins) {
   pb_ostream_from_stream(output, pbOutput);
   pb_istream_from_stream(input, pbInput);
+  pinBuffer = new PinBuffer(numPins);
 }
 
-size_t Pseudopod::sendPins(const vector<Pin>& pins) {
-  Serial.println("pins about to be sent: ");
+PinBuffer& Pseudopod::getPinBuffer() {
+  return *pinBuffer;
+}
 
-  for(int i = 0; i < pins.size(); i++) {
-    printPin(pins[i]);
-  }
-
+size_t Pseudopod::sendPins() {
   pbOutput.bytes_written = 0;
 
   protobuf::TentacleMessage protobufMsg = {};
@@ -22,7 +21,7 @@ size_t Pseudopod::sendPins(const vector<Pin>& pins) {
   protobufMsg.response = true;
   protobufMsg.has_response = true;
   protobufMsg.pins.funcs.encode = &Pseudopod::pinEncode;
-  protobufMsg.pins.arg = (void*)&pins;
+  protobufMsg.pins.arg = (void*)pinBuffer;
 
   Serial.println("about to encode message");
   Serial.flush();
@@ -33,6 +32,20 @@ size_t Pseudopod::sendPins(const vector<Pin>& pins) {
   Serial.flush();
 
   return pbOutput.bytes_written;
+}
+
+size_t Pseudopod::sendPins(PinBuffer& pins) {
+  pinBuffer->reset();
+
+  Serial.println("pins about to be sent: ");
+
+  for(int i = 0; i < pins.size(); i++) {
+    Pin& pin = pins.getPin(i);
+    printPin(pin);
+    pinBuffer->updatePin(pin);
+  }
+
+  sendPins();
 }
 
 size_t Pseudopod::authenticate(const char *uuid, const char *token) {
@@ -78,8 +91,8 @@ size_t Pseudopod::registerDevice() {
   return pbOutput.bytes_written;
 }
 
-TentacleMessage Pseudopod::readMessage() {
-  pinBuffer.clear();
+TentacleMessage::Topic Pseudopod::readMessage() {
+  pinBuffer->reset();
 
   protobuf::TentacleMessage protobufMsg = {};
 
@@ -89,22 +102,22 @@ TentacleMessage Pseudopod::readMessage() {
   bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &protobufMsg);
 
   Serial.print(F("Number of Pins Received: "));
-  Serial.println(pinBuffer.size());
+  Serial.println(pinBuffer->size());
   Serial.println(F("I received the following pins: "));
-  for(int i = 0; i < pinBuffer.size(); i++) {
-    Pin &pin = pinBuffer[i];
+  for(int i = 0; i < pinBuffer->size(); i++) {
+    Pin &pin = pinBuffer->getPin(i);
     printPin(pin);
   }
 
   if(protobufMsg.topic == protobuf::TentacleMessageTopic_action) {
-    return TentacleMessage(TentacleMessage::action, pinBuffer);
+    return TentacleMessage::action;
   }
 
   if(protobufMsg.topic == protobuf::TentacleMessageTopic_config) {
-    return TentacleMessage(TentacleMessage::config, pinBuffer);
+    return TentacleMessage::config;
   }
 
-  return TentacleMessage(TentacleMessage::unknown, pinBuffer);
+  return TentacleMessage::unknown;
 }
 
 Pin::Action Pseudopod::getPinAction(protobuf::Action action) {
@@ -176,12 +189,12 @@ protobuf::Action Pseudopod::getProtoBufAction(Pin::Action action) {
 bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
   Serial.println("entered pinEncode");
   Serial.flush();
-  vector<Pin>& pinBuffer = *((vector<Pin>*) *arg);
+  PinBuffer *pinBuffer = (PinBuffer*) *arg;
   Serial.println("cast pinbuffer out");
   Serial.flush();
   bool fail = false;
-  for(int i = 0; i < pinBuffer.size(); i++) {
-    Pin &pin = pinBuffer[i];
+  for(int i = 0; i < pinBuffer->size(); i++) {
+    Pin &pin = pinBuffer->getPin(i);
     Serial.println("got pin: ");
     printPin(pin);
 
@@ -210,20 +223,23 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
 
 
 bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  vector<Pin>& pinBuffer = *((vector<Pin>*) *arg);
+  PinBuffer* pinBuffer = (PinBuffer*) *arg;
 
   protobuf::Pin protobufPin = {};
 
   if (!pb_decode(stream, protobuf::Pin_fields, &protobufPin)) {
     return false;
   }
+  Serial.print("My size is: ");
+  Serial.flush();
+  Serial.print(pinBuffer->size());
+  Serial.flush();
 
   printPin(protobufPin);
 
-  Pin pin = Pin(protobufPin.number, getPinAction(protobufPin.action), protobufPin.value);
-  pinBuffer.push_back(pin);
+  pinBuffer->updatePin(protobufPin.number, getPinAction(protobufPin.action), protobufPin.value );
 
-  printPin(pin);
+  printPin(pinBuffer->getPin(protobufPin.number));
 
   return true;
 }

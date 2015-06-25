@@ -1,6 +1,5 @@
 #include <SPI.h>
 #include <WiFi.h>
-
 #include "StandardCplusplus.h"
 #include <vector>
 #include "Arduino.h"
@@ -30,11 +29,35 @@ static const char token[] = "6d1f0dd95bf0dc0beb64ab7252152de6a2c08583";
 int status = WL_IDLE_STATUS;
 WiFiClient conn;
 TentacleArduino tentacle;
-Pseudopod pseudopod(conn, conn);
+Pseudopod pseudopod(conn, conn, tentacle.getNumPins());
 
-using namespace std;
 
-void sendData(const vector<Pin>& pins) {
+void processMessage(TentacleMessage::Topic topic) {
+
+  if(topic == TentacleMessage::action) {
+    tentacle.processPins(pseudopod.getPinBuffer(), true);
+
+    delay(DELAY);
+    pseudopod.sendPins();
+    Serial.println(F("Sent pins"));
+    Serial.flush();
+    return;
+  }
+
+  if(topic == TentacleMessage::config) {
+
+    tentacle.configurePins(pseudopod.getPinBuffer());
+    Serial.println(F("configured pins"));
+    Serial.flush();
+    return;
+  }
+
+  Serial.println(F("got some topic I don't know about. Ignoring it"));
+  Serial.flush();
+
+}
+
+void sendData(PinBuffer& pins) {
   delay(DELAY);
 
   Serial.println(F("writing"));
@@ -79,34 +102,9 @@ void readData() {
     Serial.println(F("DATA WAS AVAILABLE!"));
     Serial.flush();
 
-    TentacleMessage message = pseudopod.readMessage();
-    processMessage(message);
+    TentacleMessage::Topic topic = pseudopod.readMessage();
+    processMessage(topic);
   }
-}
-
-void processMessage(TentacleMessage& message) {
-
-  if(message.getTopic() == TentacleMessage::action) {
-    tentacle.processPins(message.getPins(), true);
-
-    delay(DELAY);
-    pseudopod.sendPins(message.getPins());
-    Serial.println(F("Sent pins"));
-    Serial.flush();
-    return;
-  }
-
-  if(message.getTopic() == TentacleMessage::config) {
-
-    tentacle.configurePins(message.getPins());
-    Serial.println(F("configured pins"));
-    Serial.flush();
-    return;
-  }
-
-  Serial.println(F("got some topic I don't know about. Ignoring it"));
-  Serial.flush();
-
 }
 
 void connectToServer() {

@@ -12,7 +12,7 @@
 using namespace tentacle;
 
 Pseudopod *pseudopod;
-std::vector<Pin> pins;
+std::PinBuffer pins;
 uint8_t ibuffer[length];
 uint8_t obuffer[length];
 
@@ -33,7 +33,7 @@ void setup() {
   Serial.println("sending to input stream");
   istream.write(obuffer, ostream.available());
 
-  std::vector<Pin> pins2 = pseudopod->readStateMessage();
+  std::PinBuffer pins2 = pseudopod->readStateMessage();
 
   Serial.print("Pin size: ");
   Serial.print(pins2.size());
