@@ -1,6 +1,5 @@
 #include "tentacle-pseudopod.h"
 #include <stddef.h>
-#include "Arduino.h"
 
 Pseudopod::Pseudopod(Stream &input, Print &output, Tentacle& tentacle) {
   pb_ostream_from_stream(output, pbOutput);
@@ -28,21 +27,13 @@ size_t Pseudopod::sendPins() {
   currentMessage.pins.funcs.encode = &Pseudopod::pinEncode;
   currentMessage.pins.arg = (void*)this;
 
-  Serial.println("about to encode message");
-  Serial.flush();
-
   bool status = pb_encode_delimited(&pbOutput, TentacleMessage_fields, &currentMessage);
-
-  Serial.println("encoded message");
-  Serial.flush();
 
   return pbOutput.bytes_written;
 }
 
 size_t Pseudopod::sendPins(Action* actions) {
   resetPinActions();
-
-  Serial.println(F("pins about to be sent: "));
 
   for(int i = 0; i < tentacle->getNumPins(); i++) {
     pinActions[i] = actions[i];
@@ -56,13 +47,6 @@ size_t Pseudopod::sendConfiguredPins() {
 }
 
 size_t Pseudopod::authenticate(const char *uuid, const char *token) {
-  Serial.print(F("uuid in string:\t"));
-  Serial.println(uuid);
-
-  Serial.print(F("token in string:\t"));
-  Serial.println(token);
-  Serial.flush();
-
   pbOutput.bytes_written = 0;
 
   currentMessage = {};
@@ -79,13 +63,6 @@ size_t Pseudopod::authenticate(const char *uuid, const char *token) {
 
   currentMessage.authentication.has_token = true;
 
-  Serial.print(F("uuid:\t"));
-  Serial.println(currentMessage.authentication.uuid);
-
-  Serial.print(F("token:\t"));
-  Serial.println(currentMessage.authentication.token);
-
-  Serial.flush();
   bool status = pb_encode_delimited(&pbOutput, TentacleMessage_fields, &currentMessage);
 
   return pbOutput.bytes_written;
@@ -101,14 +78,7 @@ size_t Pseudopod::registerDevice() {
 }
 
 TentacleMessageTopic Pseudopod::readMessage() {
-
-  Serial.println("resetting pins");
-  Serial.flush();
-
   resetPinActions();
-
-  Serial.println("pins reset");
-  Serial.flush();
 
   currentMessage = {};
   currentMessage.pins.funcs.decode = &Pseudopod::pinDecode;
@@ -119,9 +89,6 @@ TentacleMessageTopic Pseudopod::readMessage() {
 }
 
 bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
-  Serial.println("entered pinEncode");
-  Serial.flush();
-
   Pseudopod *pseudopod = (Pseudopod*) *arg;
   Action action;
   Pin pin;
@@ -131,9 +98,7 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
     if(action == Action_ignore) {
       continue;
     }
-    Serial.print(F("Not ignoring pin #"));
-    Serial.println(i);
-    Serial.flush();
+
     pin = {};
     pin.has_action = true;
     pin.action = action;
@@ -145,8 +110,6 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
       pin.has_value = true;
       pin.value = value;
     }
-
-    printPin(pin);
 
     if (!pb_encode_tag_for_field(stream, field)) {
       return false;
@@ -164,7 +127,6 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
 
 bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   Pseudopod *pseudopod = (Pseudopod*) *arg;
-
   Pin pin = {};
 
   if (!pb_decode(stream, Pin_fields, &pin)) {
@@ -175,26 +137,15 @@ bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **
 
   switch(message.topic) {
     case TentacleMessageTopic_config:
-      Serial.println("IT WAS A CONFIG TOPIC");
       pseudopod->tentacle->configurePin(pin.number, pin.action);
     break;
+
     case TentacleMessageTopic_action:
-      Serial.println("IT WAS AN ACTION TOPIC");
       pseudopod->pinActions[pin.number] = pin.action;
       pseudopod->tentacle->processPin(pin.number, pin.value);
     break;
+
   }
 
-  printPin(pin);
   return true;
-}
-
-void Pseudopod::printPin(const Pin& pin) {
-  Serial.print("pin: #");
-  Serial.print(pin.number);
-  Serial.print("\taction:\t");
-  Serial.print(pin.action);
-  Serial.print("\tvalue:\t");
-  Serial.println(pin.value);
-  Serial.flush();
 }

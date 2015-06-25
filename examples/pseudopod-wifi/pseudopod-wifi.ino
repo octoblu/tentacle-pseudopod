@@ -49,12 +49,21 @@ void loop() {
   readData();
   delay(DELAY);
   pseudopod.sendConfiguredPins();
+  Serial.print(F("Free ram: "));
+  Serial.print(freeRam());
+  Serial.println(F(" bytes"));
+  Serial.flush();
 }
 
 void readData() {
+  if(!conn.available()) {
+    return;
+  }
+  
   delay(DELAY);
+
   while (conn.available()) {
-    Serial.println(F("DATA WAS AVAILABLE!"));
+    Serial.println(F("Received message"));
     Serial.flush();
 
     pseudopod.readMessage();
