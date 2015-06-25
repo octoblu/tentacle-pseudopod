@@ -7,7 +7,8 @@ Pseudopod::Pseudopod(Stream &input, Print &output) {
   pb_istream_from_stream(input, pbInput);
 }
 
-size_t Pseudopod::sendPins(vector<Pin> pins) {
+size_t Pseudopod::sendPins(vector<Pin>& pins) {
+  pinBuffer = pins;
   Serial.println("pins about to be sent: ");
   for(int i = 0; i < pins.size(); i++) {
     printPin(pins[i]);
@@ -20,7 +21,7 @@ size_t Pseudopod::sendPins(vector<Pin> pins) {
   protobufMsg.response = true;
   protobufMsg.has_response = true;
   protobufMsg.pins.funcs.encode = &Pseudopod::pinEncode;
-  // protobufMsg.pins.arg = (void*)&pinBuffer;
+  protobufMsg.pins.arg = (void*)&pinBuffer;
 
   Serial.println("about to encode message");
   Serial.flush();
