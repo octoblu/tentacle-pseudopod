@@ -7,12 +7,13 @@ Pseudopod::Pseudopod(Stream &input, Print &output) {
   pb_istream_from_stream(input, pbInput);
 }
 
-size_t Pseudopod::sendPins(vector<Pin>& pins) {
-  pinBuffer = pins;
+size_t Pseudopod::sendPins(const vector<Pin>& pins) {
   Serial.println("pins about to be sent: ");
+
   for(int i = 0; i < pins.size(); i++) {
     printPin(pins[i]);
   }
+
   pbOutput.bytes_written = 0;
 
   protobuf::TentacleMessage protobufMsg = {};
@@ -21,7 +22,7 @@ size_t Pseudopod::sendPins(vector<Pin>& pins) {
   protobufMsg.response = true;
   protobufMsg.has_response = true;
   protobufMsg.pins.funcs.encode = &Pseudopod::pinEncode;
-  protobufMsg.pins.arg = (void*)&pinBuffer;
+  protobufMsg.pins.arg = (void*)&pins;
 
   Serial.println("about to encode message");
   Serial.flush();
@@ -227,7 +228,7 @@ bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **
   return true;
 }
 
-void Pseudopod::printPin(Pin& pin) {
+void Pseudopod::printPin(const Pin& pin) {
   Serial.print(F("#"));
   Serial.print(pin.getNumber());
   Serial.print(F("\taction:\t"));
@@ -237,7 +238,7 @@ void Pseudopod::printPin(Pin& pin) {
   Serial.flush();
 }
 
-void Pseudopod::printPin(protobuf::Pin& protobufPin) {
+void Pseudopod::printPin(const protobuf::Pin& protobufPin) {
   Serial.print("Protobuf pin: #");
   Serial.print(protobufPin.number);
   Serial.print("\taction:\t");

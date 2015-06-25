@@ -34,7 +34,7 @@ Pseudopod pseudopod(conn, conn);
 
 using namespace std;
 
-void sendData(vector<Pin> pins) {
+void sendData(const vector<Pin>& pins) {
   delay(DELAY);
 
   Serial.println(F("writing"));
@@ -69,7 +69,8 @@ void loop() {
   }
 
   readData();
-  sendData(tentacle.processPins());
+  tentacle.processPins();
+  sendData(tentacle.getPins());
 }
 
 void readData() {
@@ -86,10 +87,10 @@ void readData() {
 void processMessage(TentacleMessage& message) {
 
   if(message.getTopic() == TentacleMessage::action) {
-    vector<Pin> pins = tentacle.processPins(message.getPins(), true);
+    tentacle.processPins(message.getPins(), true);
 
     delay(DELAY);
-    pseudopod.sendPins(pins);
+    pseudopod.sendPins(message.getPins());
     Serial.println(F("Sent pins"));
     Serial.flush();
     return;

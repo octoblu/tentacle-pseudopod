@@ -25,8 +25,7 @@ class Pseudopod {
   public:
     Pseudopod(Stream &input, Print &output);
 
-    size_t sendPins(vector<Pin>& pins);
-    size_t sendPins();
+    size_t sendPins(const vector<Pin>& pins);
 
     TentacleMessage readMessage();
 
@@ -43,8 +42,8 @@ class Pseudopod {
     static protobuf::Action getProtoBufAction(Pin::Action action);
     static Pin::Action getPinAction(protobuf::Action action);
 
-    static void printPin(Pin& pin);
-    static void printPin(protobuf::Pin& protobufPin);
+    static void printPin(const Pin& pin);
+    static void printPin(const protobuf::Pin& protobufPin);
 };
 
 #endif
