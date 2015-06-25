@@ -59,11 +59,10 @@ void readData() {
     Serial.println(F("Received message"));
     Serial.flush();
 
-    pseudopod.readMessage();
-    /*if(topic == TentacleMessageTopic_action) {
+    if(pseudopod.readMessage() == TentacleMessageTopic_action) {
       delay(DELAY);
       pseudopod.sendPins();
-    }*/
+    }
   }
 
   delay(DELAY);

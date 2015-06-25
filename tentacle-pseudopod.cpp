@@ -32,10 +32,6 @@ size_t Pseudopod::sendPins() {
   return pbOutput.bytes_written;
 }
 
-size_t Pseudopod::sendConfiguredPins() {
-  return sendPins(tentacle->getConfiguredPinActions());
-}
-
 size_t Pseudopod::sendPins(Action* actions) {
   resetPinActions();
 
@@ -44,6 +40,10 @@ size_t Pseudopod::sendPins(Action* actions) {
   }
 
   return sendPins();
+}
+
+size_t Pseudopod::sendConfiguredPins() {
+  return sendPins(tentacle->getConfiguredPinActions());
 }
 
 size_t Pseudopod::authenticate(const char *uuid, const char *token) {
