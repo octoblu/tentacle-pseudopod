@@ -6,13 +6,13 @@ Pseudopod::Pseudopod(Stream &input, Print &output, Tentacle& tentacle) {
   pb_istream_from_stream(input, pbInput);
 
   this->tentacle = &tentacle;
-  pinActions = new Action[tentacle.getNumPins()];
+  messagePinActions = new Action[tentacle.getNumPins()];
   resetPinActions();
 }
 
 void Pseudopod::resetPinActions() {
   for(int i = 0; i < tentacle->getNumPins(); i++) {
-    pinActions[i] = Action_ignore;
+    messagePinActions[i] = Action_ignore;
   }
 }
 
@@ -32,18 +32,18 @@ size_t Pseudopod::sendPins() {
   return pbOutput.bytes_written;
 }
 
+size_t Pseudopod::sendConfiguredPins() {
+  return sendPins(tentacle->getConfiguredPinActions());
+}
+
 size_t Pseudopod::sendPins(Action* actions) {
   resetPinActions();
 
   for(int i = 0; i < tentacle->getNumPins(); i++) {
-    pinActions[i] = actions[i];
+    messagePinActions[i] = actions[i];
   }
 
   return sendPins();
-}
-
-size_t Pseudopod::sendConfiguredPins() {
-  return sendPins(tentacle->getPinActions());
 }
 
 size_t Pseudopod::authenticate(const char *uuid, const char *token) {
@@ -69,12 +69,7 @@ size_t Pseudopod::authenticate(const char *uuid, const char *token) {
 }
 
 size_t Pseudopod::registerDevice() {
-  pbOutput.bytes_written = 0;
-
-  MeshbluAuthentication message = {};
-  bool status = pb_encode_delimited(&pbOutput, TentacleMessage_fields, &message);
-
-  return pbOutput.bytes_written;
+  return 0;
 }
 
 TentacleMessageTopic Pseudopod::readMessage() {
@@ -85,6 +80,7 @@ TentacleMessageTopic Pseudopod::readMessage() {
   currentMessage.pins.arg = (void*) this;
 
   bool status = pb_decode_delimited(&pbInput, TentacleMessage_fields, &currentMessage);
+
   return currentMessage.topic;
 }
 
@@ -94,7 +90,7 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
   Pin pin;
 
   for(int i = 0; i < pseudopod->tentacle->getNumPins(); i++) {
-    action = pseudopod->pinActions[i];
+    action = pseudopod->messagePinActions[i];
     if(action == Action_ignore) {
       continue;
     }
@@ -141,7 +137,7 @@ bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **
     break;
 
     case TentacleMessageTopic_action:
-      pseudopod->pinActions[pin.number] = pin.action;
+      pseudopod->messagePinActions[pin.number] = pin.action;
       pseudopod->tentacle->processPin(pin.number, pin.value);
     break;
 

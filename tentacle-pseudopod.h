@@ -19,9 +19,9 @@ class Pseudopod {
   public:
     Pseudopod(Stream& input, Print& output, Tentacle& tentacle);
 
+    size_t sendConfiguredPins();
     size_t sendPins(Action* pinActions);
     size_t sendPins();
-    size_t sendConfiguredPins();
 
     TentacleMessageTopic readMessage();
 
@@ -32,11 +32,13 @@ class Pseudopod {
     pb_ostream_t pbOutput;
     pb_istream_t pbInput;
     Tentacle* tentacle;
-    Action* pinActions;
+    Action* messagePinActions;
 
     void resetPinActions();
     static void printPin(const Pin& pin);
+
     TentacleMessage currentMessage;
+
     static bool pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
     static bool pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg);
 };

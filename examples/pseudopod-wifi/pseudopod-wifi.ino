@@ -34,19 +34,17 @@ void setup() {
   Serial.println(F("Starting up."));
 
   setupWifi();
+  connectToServer();
+  delay(DELAY);
 }
 
 void loop() {
   if (!conn.connected()) {
     conn.stop();
-    Serial.println(F("No connection!"));
-    Serial.flush();
-
     connectToServer();
   }
 
   readData();
-  delay(DELAY);
   pseudopod.sendConfiguredPins();
   Serial.print(F("Free ram: "));
   Serial.print(freeRam());
@@ -56,18 +54,26 @@ void loop() {
 
 void readData() {
   delay(DELAY);
+
   while (conn.available()) {
     Serial.println(F("Received message"));
     Serial.flush();
-    
+
     pseudopod.readMessage();
+    /*if(topic == TentacleMessageTopic_action) {
+      delay(DELAY);
+      pseudopod.sendPins();
+    }*/
   }
+
+  delay(DELAY);
 }
 
 void connectToServer() {
   int connectionAttempts = 0;
   Serial.println(F("Connecting to the server."));
   Serial.flush();
+
   while(!conn.connect(server, port)) {
     if(connectionAttempts > 5) {
       Serial.println(F("Still can't connect. I must have gone crazy. Rebooting"));
@@ -82,10 +88,10 @@ void connectToServer() {
     connectionAttempts++;
   }
 
-
   size_t authSize = pseudopod.authenticate(uuid, token);
   Serial.print(authSize);
   Serial.println(F(" bytes written for authentication"));
+
 }
 
 void setupWifi() {
