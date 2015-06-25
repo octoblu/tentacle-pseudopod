@@ -1,32 +1,17 @@
 #include "tentacle-pseudopod.h"
-#include "pin-array.h"
 #include <stddef.h>
 #include "Arduino.h"
 
-
-
-Pseudopod::Pseudopod(Stream &input, Print &output, size_t numPins) {
+Pseudopod::Pseudopod(Stream &input, Print &output) {
   pb_ostream_from_stream(output, pbOutput);
   pb_istream_from_stream(input, pbInput);
-
-  this->numPins = numPins;
-  pinBuffer = PinArray(numPins);
-  resetPinBuffer();
 }
 
-void Pseudopod::resetPinBuffer() {
-  Serial.println(F("Resetting pin buffer"));
-  Serial.flush();
-
-  pinBuffer.resetPins();
-
-  Serial.println(F("Pin buffer reset."));
-  Serial.flush();
-}
-
-size_t Pseudopod::sendPins(Pin *pins, size_t length) {
-  pinBuffer.update(pins, length);
-
+size_t Pseudopod::sendPins(vector<Pin> pins) {
+  Serial.println("pins about to be sent: ");
+  for(int i = 0; i < pins.size(); i++) {
+    printPin(pins[i]);
+  }
   pbOutput.bytes_written = 0;
 
   protobuf::TentacleMessage protobufMsg = {};
@@ -35,7 +20,7 @@ size_t Pseudopod::sendPins(Pin *pins, size_t length) {
   protobufMsg.response = true;
   protobufMsg.has_response = true;
   protobufMsg.pins.funcs.encode = &Pseudopod::pinEncode;
-  protobufMsg.pins.arg = (void*)&pinBuffer;
+  // protobufMsg.pins.arg = (void*)&pinBuffer;
 
   Serial.println("about to encode message");
   Serial.flush();
@@ -46,10 +31,6 @@ size_t Pseudopod::sendPins(Pin *pins, size_t length) {
   Serial.flush();
 
   return pbOutput.bytes_written;
-}
-
-size_t Pseudopod::sendPins(const PinArray& pinArray) {
-  return sendPins(pinArray.getElements(), pinArray.getLength());
 }
 
 size_t Pseudopod::authenticate(const char *uuid, const char *token) {
@@ -87,19 +68,16 @@ size_t Pseudopod::authenticate(const char *uuid, const char *token) {
 }
 
 size_t Pseudopod::registerDevice() {
-  // pbOutput.bytes_written = 0;
-  //
-  // protobuf::MeshbluAuthentication protobufMsg = {};
-  // bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &protobufMsg);
-  //
-  // return pbOutput.bytes_written;
+  pbOutput.bytes_written = 0;
+
+  protobuf::MeshbluAuthentication protobufMsg = {};
+  bool status = pb_encode_delimited(&pbOutput, protobuf::TentacleMessage_fields, &protobufMsg);
+
+  return pbOutput.bytes_written;
 }
 
 TentacleMessage Pseudopod::readMessage() {
-  Serial.println(F("Entered readMessage"));
-  Serial.flush();
-
-  resetPinBuffer();
+  pinBuffer.clear();
 
   protobuf::TentacleMessage protobufMsg = {};
 
@@ -108,14 +86,11 @@ TentacleMessage Pseudopod::readMessage() {
 
   bool status = pb_decode_delimited(&pbInput, protobuf::TentacleMessage_fields, &protobufMsg);
 
+  Serial.print(F("Number of Pins Received: "));
+  Serial.println(pinBuffer.size());
   Serial.println(F("I received the following pins: "));
-  for(int i = 0; i < numPins; i++) {
+  for(int i = 0; i < pinBuffer.size(); i++) {
     Pin &pin = pinBuffer[i];
-
-    if(pin.getAction() == Pin::ignore) {
-      continue;
-    }
-
     printPin(pin);
   }
 
@@ -197,15 +172,16 @@ protobuf::Action Pseudopod::getProtoBufAction(Pin::Action action) {
 }
 
 bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
-  PinArray pinArray = *((PinArray*) *arg);
+  Serial.println("entered pinEncode");
+  Serial.flush();
+  vector<Pin>& pinBuffer = *((vector<Pin>*) *arg);
+  Serial.println("cast pinbuffer out");
+  Serial.flush();
   bool fail = false;
-  for(int i = 0; i < pinArray.getLength(); i++) {
-
-    Pin &pin = pinArray[i];
-
-    if(pin.getAction() == Pin::ignore) {
-      continue;
-    }
+  for(int i = 0; i < pinBuffer.size(); i++) {
+    Pin &pin = pinBuffer[i];
+    Serial.println("got pin: ");
+    printPin(pin);
 
     protobuf::Pin protobufPin = {};
 
@@ -232,7 +208,7 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
 
 
 bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  PinArray pinArray = *((PinArray*) *arg);
+  vector<Pin>& pinBuffer = *((vector<Pin>*) *arg);
 
   protobuf::Pin protobufPin = {};
 
@@ -240,29 +216,32 @@ bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **
     return false;
   }
 
-  Serial.print("Protobuf pin: #");
-  Serial.print(protobufPin.number);
-  Serial.print("\tvalue:\t");
-  Serial.print(protobufPin.value);
-  Serial.print("\taction:\t");
-  Serial.flush();
+  printPin(protobufPin);
 
-  Pin& pin = pinArray[protobufPin.number];
-
-  pin.setAction( getPinAction(protobufPin.action) );
-  pin.setValue(protobufPin.value);
+  Pin pin = Pin(protobufPin.number, getPinAction(protobufPin.action), protobufPin.value);
+  pinBuffer.push_back(pin);
 
   printPin(pin);
 
   return true;
 }
 
-void Pseudopod::printPin(Pin &pin) {
+void Pseudopod::printPin(Pin& pin) {
   Serial.print(F("#"));
   Serial.print(pin.getNumber());
-  Serial.print(F("\tmode:\t"));
+  Serial.print(F("\taction:\t"));
   Serial.print(pin.getAction());
   Serial.print(F("\tvalue:\t"));
   Serial.println(pin.getValue());
+  Serial.flush();
+}
+
+void Pseudopod::printPin(protobuf::Pin& protobufPin) {
+  Serial.print("Protobuf pin: #");
+  Serial.print(protobufPin.number);
+  Serial.print("\taction:\t");
+  Serial.print(protobufPin.action);
+  Serial.print("\tvalue:\t");
+  Serial.println(protobufPin.value);
   Serial.flush();
 }

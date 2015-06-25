@@ -1,6 +1,8 @@
 #include <SPI.h>
 #include <WiFi.h>
 
+#include "StandardCplusplus.h"
+#include <vector>
 #include "Arduino.h"
 
 #include "pb_arduino_encode.h"
@@ -19,33 +21,37 @@
 /*char ssid[] = "octoblu-guest";
 char password[] = "octoblu1";
 IPAddress server(172,16,42,44);*/
-
-//home
-char ssid[] = "ROBOT-WASTELAND";
-char password[] = "lemonade";
-IPAddress server(192,168,0,112);
-
-//Scout
-/*char ssid[] = "Robot-Scout";
-char password[] = "lemonade";
-IPAddress server(192,168,1,3);*/
-
+#include "wifi-credentials.h"
+#define port 8111
 
 static const char uuid[]  = "b9944342-b8c7-4ca6-9d3e-074eb4706264";
 static const char token[] = "6d1f0dd95bf0dc0beb64ab7252152de6a2c08583";
 
-
-#define port 8111
-
 int status = WL_IDLE_STATUS;
 WiFiClient conn;
 TentacleArduino tentacle;
-Pseudopod pseudopod(conn, conn, tentacle.getNumPins());
+Pseudopod pseudopod(conn, conn);
+
+using namespace std;
+
+void sendData(vector<Pin> pins) {
+  delay(DELAY);
+
+  Serial.println(F("writing"));
+  Serial.flush();
+
+  size_t written = pseudopod.sendPins(pins);
+  Serial.print(written);
+  Serial.println(F(" bytes written."));
+  Serial.print(freeRam());
+  Serial.println(F(" bytes free"));
+  Serial.flush();
+}
 
 void setup() {
   Serial.begin(9600);
   Serial.println(F("Starting up."));
-
+  printToken(0);
 
   setupWifi();
   connectToServer();
@@ -53,33 +59,17 @@ void setup() {
 }
 
 void loop() {
-
+  printToken(1);
   if (!conn.connected()) {
     conn.stop();
     Serial.println(F("No connection!"));
     Serial.flush();
 
     connectToServer();
-
   }
 
   readData();
-  tentacle.processPins();
-  sendData();
-}
-
-void sendData() {
-  delay(DELAY);
-
-  Serial.println(F("writing"));
-  Serial.flush();
-
-  size_t written = pseudopod.sendPins(tentacle.getPins(), tentacle.getNumPins());
-  Serial.print(written);
-  Serial.println(F(" bytes written."));
-  Serial.print(freeRam());
-  Serial.println(F(" bytes free"));
-  Serial.flush();
+  sendData(tentacle.processPins());
 }
 
 void readData() {
@@ -93,13 +83,13 @@ void readData() {
   }
 }
 
-void processMessage(const TentacleMessage& message) {
+void processMessage(TentacleMessage& message) {
 
   if(message.getTopic() == TentacleMessage::action) {
-    tentacle.processPins(message.getPins(), true);
+    vector<Pin> pins = tentacle.processPins(message.getPins(), true);
 
     delay(DELAY);
-    pseudopod.sendPins(message.getPins());
+    pseudopod.sendPins(pins);
     Serial.println(F("Sent pins"));
     Serial.flush();
     return;
@@ -107,7 +97,7 @@ void processMessage(const TentacleMessage& message) {
 
   if(message.getTopic() == TentacleMessage::config) {
 
-    tentacle.configurePins(message.getPins());    
+    tentacle.configurePins(message.getPins());
     Serial.println(F("configured pins"));
     Serial.flush();
     return;
@@ -179,4 +169,11 @@ int freeRam () {
   extern int __heap_start, *__brkval;
   int v;
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+}
+
+void printToken(int identifier) {
+  Serial.print(F("#"));
+  Serial.print(identifier);
+  Serial.print(F(" token: "));
+  Serial.println(token);
 }

@@ -1,14 +1,14 @@
 #include "tentacle-message.h"
 
-TentacleMessage::TentacleMessage(const TentacleMessage::Topic &topic, const PinArray &pins) {
-  this->topic = &topic;
-  this->pins = &pins;
+TentacleMessage::TentacleMessage(TentacleMessage::Topic topic, vector<Pin> pins) {
+  this->topic = topic;
+  this->pins = pins;
 }
 
-const TentacleMessage::Topic& TentacleMessage::getTopic() const {
-  return *topic;
+TentacleMessage::Topic& TentacleMessage::getTopic() {
+  return topic;
 }
 
-const PinArray& TentacleMessage::getPins() const {
-  return *pins;
+vector<Pin>& TentacleMessage::getPins() {
+  return pins;
 }

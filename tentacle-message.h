@@ -1,9 +1,10 @@
 #ifndef TENTACLE_MESSAGE_H
 #define TENTACLE_MESSAGE_H
 
-#include "pin-array.h"
+#include <vector>
 #include "pins.hpp"
 
+using namespace std;
 class TentacleMessage {
 
 public:
@@ -13,13 +14,14 @@ public:
     unknown = 2
   };
 
-  TentacleMessage(const TentacleMessage::Topic &topic, const PinArray& pins);
-  const TentacleMessage::Topic& getTopic() const;
-  const PinArray& getPins() const;
+  TentacleMessage(TentacleMessage::Topic topic, vector<Pin> pins);
+  TentacleMessage::Topic& getTopic();
+  vector<Pin>& getPins();
 
 private:
-  const TentacleMessage::Topic *topic;
-  const PinArray *pins;
+  TentacleMessage();
+  TentacleMessage::Topic topic;
+  vector<Pin> pins;
 };
 
 #endif
