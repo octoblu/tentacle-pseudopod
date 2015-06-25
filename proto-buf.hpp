@@ -1,3 +1,1 @@
-namespace protobuf {
-  #include "tentacle-message.pb.h"
-}
+#include "tentacle-message.pb.h"

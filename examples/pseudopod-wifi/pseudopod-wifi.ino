@@ -8,7 +8,6 @@
 #include "pb_arduino_decode.h"
 
 #include "tentacle.h"
-#include "tentacle-message.h"
 #include "tentacle-arduino.h"
 #include "tentacle-pseudopod.h"
 
@@ -29,13 +28,13 @@ static const char token[] = "6d1f0dd95bf0dc0beb64ab7252152de6a2c08583";
 int status = WL_IDLE_STATUS;
 WiFiClient conn;
 TentacleArduino tentacle;
-Pseudopod pseudopod(conn, conn, tentacle.getNumPins());
+Pseudopod pseudopod(conn, conn, tentacle);
 
 
-void processMessage(TentacleMessage::Topic topic) {
+/*void processMessage() {
 
   if(topic == TentacleMessage::action) {
-    tentacle.processPins(pseudopod.getPinBuffer(), true);
+    tentacle.processPins(pseudopod.getPinActions(), true);
 
     delay(DELAY);
     pseudopod.sendPins();
@@ -46,7 +45,7 @@ void processMessage(TentacleMessage::Topic topic) {
 
   if(topic == TentacleMessage::config) {
 
-    tentacle.configurePins(pseudopod.getPinBuffer());
+    tentacle.configurePins(pseudopod.getPinActions());
     Serial.println(F("configured pins"));
     Serial.flush();
     return;
@@ -55,9 +54,9 @@ void processMessage(TentacleMessage::Topic topic) {
   Serial.println(F("got some topic I don't know about. Ignoring it"));
   Serial.flush();
 
-}
+}*/
 
-void sendData(PinBuffer& pins) {
+/*void sendData(PinActions& pins) {
   delay(DELAY);
 
   Serial.println(F("writing"));
@@ -69,7 +68,7 @@ void sendData(PinBuffer& pins) {
   Serial.print(freeRam());
   Serial.println(F(" bytes free"));
   Serial.flush();
-}
+}*/
 
 void setup() {
   Serial.begin(9600);
@@ -92,8 +91,8 @@ void loop() {
   }
 
   readData();
-  tentacle.processPins();
-  sendData(tentacle.getPins());
+  /*tentacle.processPins();*/
+  /*sendData(tentacle.getPins());*/
 }
 
 void readData() {
@@ -102,8 +101,8 @@ void readData() {
     Serial.println(F("DATA WAS AVAILABLE!"));
     Serial.flush();
 
-    TentacleMessage::Topic topic = pseudopod.readMessage();
-    processMessage(topic);
+    pseudopod.readMessage();
+    /*processMessage(topic);*/
   }
 }
 

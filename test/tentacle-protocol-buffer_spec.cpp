@@ -1,5 +1,5 @@
 #include <limits.h>
-#include "pin-buffer.h"
+#include "pin-actions.h"
 
 #include "gtest/gtest.h"
 #include "Stream.h"
@@ -18,7 +18,7 @@ TEST(PseudopodTest, writeStateMessage_1) {
   BufferStream istream(ibuffer, length);
   BufferStream ostream(obuffer, length);
 
-  PinBuffer pins;
+  PinActions pins;
   pins.push_back(Pin(4, Pin::digitalRead, 1));
   pins.push_back(Pin(40, Pin::analogWrite, 0));
 
@@ -28,7 +28,7 @@ TEST(PseudopodTest, writeStateMessage_1) {
 
   cout << "sending to input stream" << endl;
   istream.write(obuffer, ostream.available());
-  PinBuffer pins2 = pseudopod.getMessage().getPins();
+  PinActions pins2 = pseudopod.getMessage().getPins();
 
   EXPECT_EQ(pins2.size(), 2);
 }
@@ -41,7 +41,7 @@ TEST(PseudopodTest, writeStateMessage_2) {
   BufferStream istream(ibuffer, length);
   BufferStream ostream(obuffer, length);
 
-  PinBuffer pins;
+  PinActions pins;
 
   Pseudopod pseudopod(istream, ostream);
 
@@ -53,7 +53,7 @@ TEST(PseudopodTest, writeStateMessage_2) {
   cout << "sending to input stream" << endl;
   istream.write(obuffer, ostream.available());
 
-  PinBuffer pins2 = pseudopod.getMessage().getPins();
+  PinActions pins2 = pseudopod.getMessage().getPins();
   
   EXPECT_EQ(pins2.size(), 2);
   EXPECT_EQ(pins2[0].getNumber(), pins[0].getNumber());
