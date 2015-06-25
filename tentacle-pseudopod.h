@@ -21,8 +21,9 @@ class Pseudopod {
 
     size_t sendPins(Action* pinActions);
     size_t sendPins();
+    size_t sendConfiguredPins();
 
-    Pseudopod& readMessage();
+    TentacleMessageTopic readMessage();
 
     size_t authenticate(const char* uuid, const char *token);
     size_t registerDevice();
@@ -35,6 +36,9 @@ class Pseudopod {
 
     void resetPinActions();
     static void printPin(const Pin& pin);
+    TentacleMessage currentMessage;
+    static bool pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
+    static bool pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg);
 };
 
 #endif

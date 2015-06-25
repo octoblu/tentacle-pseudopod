@@ -1,7 +1,5 @@
 #include <SPI.h>
 #include <WiFi.h>
-#include "StandardCplusplus.h"
-#include <vector>
 #include "Arduino.h"
 
 #include "pb_arduino_encode.h"
@@ -30,50 +28,9 @@ WiFiClient conn;
 TentacleArduino tentacle;
 Pseudopod pseudopod(conn, conn, tentacle);
 
-
-/*void processMessage() {
-
-  if(topic == TentacleMessage::action) {
-    tentacle.processPins(pseudopod.getPinActions(), true);
-
-    delay(DELAY);
-    pseudopod.sendPins();
-    Serial.println(F("Sent pins"));
-    Serial.flush();
-    return;
-  }
-
-  if(topic == TentacleMessage::config) {
-
-    tentacle.configurePins(pseudopod.getPinActions());
-    Serial.println(F("configured pins"));
-    Serial.flush();
-    return;
-  }
-
-  Serial.println(F("got some topic I don't know about. Ignoring it"));
-  Serial.flush();
-
-}*/
-
-/*void sendData(PinActions& pins) {
-  delay(DELAY);
-
-  Serial.println(F("writing"));
-  Serial.flush();
-
-  size_t written = pseudopod.sendPins(pins);
-  Serial.print(written);
-  Serial.println(F(" bytes written."));
-  Serial.print(freeRam());
-  Serial.println(F(" bytes free"));
-  Serial.flush();
-}*/
-
 void setup() {
   Serial.begin(9600);
   Serial.println(F("Starting up."));
-  printToken(0);
 
   setupWifi();
   connectToServer();
@@ -81,7 +38,6 @@ void setup() {
 }
 
 void loop() {
-  printToken(1);
   if (!conn.connected()) {
     conn.stop();
     Serial.println(F("No connection!"));
@@ -91,8 +47,8 @@ void loop() {
   }
 
   readData();
-  /*tentacle.processPins();*/
-  /*sendData(tentacle.getPins());*/
+  delay(DELAY);
+  pseudopod.sendConfiguredPins();
 }
 
 void readData() {
@@ -102,7 +58,6 @@ void readData() {
     Serial.flush();
 
     pseudopod.readMessage();
-    /*processMessage(topic);*/
   }
 }
 
@@ -121,7 +76,7 @@ void connectToServer() {
     Serial.println(F("Can't connect to the server."));
     Serial.flush();
     conn.stop();
-    delay(1000);
+    delay(DELAY);
     connectionAttempts++;
   }
 
@@ -167,11 +122,4 @@ int freeRam () {
   extern int __heap_start, *__brkval;
   int v;
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
-}
-
-void printToken(int identifier) {
-  Serial.print(F("#"));
-  Serial.print(identifier);
-  Serial.print(F(" token: "));
-  Serial.println(token);
 }
