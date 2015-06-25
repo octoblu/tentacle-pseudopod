@@ -25,6 +25,7 @@ static const char token[] = "6d1f0dd95bf0dc0beb64ab7252152de6a2c08583";
 
 int status = WL_IDLE_STATUS;
 WiFiClient conn;
+
 TentacleArduino tentacle;
 Pseudopod pseudopod(conn, conn, tentacle);
 
@@ -33,8 +34,6 @@ void setup() {
   Serial.println(F("Starting up."));
 
   setupWifi();
-  connectToServer();
-  delay(DELAY);
 }
 
 void loop() {
@@ -56,22 +55,16 @@ void loop() {
 }
 
 void readData() {
-  if(!conn.available()) {
-    return;
-  }
-  
   delay(DELAY);
-
   while (conn.available()) {
     Serial.println(F("Received message"));
     Serial.flush();
-
+    
     pseudopod.readMessage();
   }
 }
 
 void connectToServer() {
-
   int connectionAttempts = 0;
   Serial.println(F("Connecting to the server."));
   Serial.flush();
