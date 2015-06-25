@@ -1,4 +1,2 @@
 MeshbluAuthentication.uuid max_size:64
 MeshbluAuthentication.token max_size:64
-
-TentacleMessage.pins max_count:100

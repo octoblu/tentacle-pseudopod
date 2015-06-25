@@ -30,7 +30,10 @@ class Pseudopod {
    private:
     pb_ostream_t pbOutput;
     pb_istream_t pbInput;
+    Tentacle* tentacle;
+    Action* pinActions;
 
+    void resetPinActions();
     static void printPin(const Pin& pin);
 };
 

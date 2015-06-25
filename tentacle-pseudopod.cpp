@@ -6,13 +6,13 @@ Pseudopod::Pseudopod(Stream &input, Print &output, Tentacle& tentacle) {
   pb_ostream_from_stream(output, pbOutput);
   pb_istream_from_stream(input, pbInput);
 
-  this->tentacle = tentacle;
+  this->tentacle = &tentacle;
   pinActions = new Action[tentacle.getNumPins()];
   resetPinActions();
 }
 
 void Pseudopod::resetPinActions() {
-  for(int i = 0; i < tentacle.getNumPins(); i++) {
+  for(int i = 0; i < tentacle->getNumPins(); i++) {
     pinActions[i] = Action_ignore;
   }
 }
@@ -25,10 +25,9 @@ size_t Pseudopod::sendPins() {
   message.has_topic = true;
   message.response = true;
   message.has_response = true;
-  message.has_pins = true;
 
   int pinCount = 0;
-  for(int i = 0; i < tentacle.getNumPins(); i++) {
+  for(int i = 0; i < tentacle->getNumPins(); i++) {
     Pin pin = {};
 
     if( pinActions[i] == Action_ignore) {
@@ -38,7 +37,7 @@ size_t Pseudopod::sendPins() {
     pin.number = i;
     pin.has_number = true;
 
-    pin.value = tentacle.getValue(i);
+    pin.value = tentacle->getValue(i);
     pin.has_value = true;
 
     pin.action = pinActions[i];
@@ -65,7 +64,7 @@ size_t Pseudopod::sendPins(Action* actions) {
 
   Serial.println("pins about to be sent: ");
 
-  for(int i = 0; i < tentacle.getNumPins(); i++) {
+  for(int i = 0; i < tentacle->getNumPins(); i++) {
     pinActions[i] = actions[i];
   }
 
@@ -134,7 +133,7 @@ Pseudopod& Pseudopod::readMessage() {
   Serial.print(F("Number of Pins Received: "));
   Serial.println(message.pins_count);
   Serial.println(F("I received the following pins: "));
-  
+
   for(int i = 0; i < message.pins_count; i++) {
     printPin(message.pins[i]);
   }
