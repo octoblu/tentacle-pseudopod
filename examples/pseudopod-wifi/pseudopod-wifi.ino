@@ -20,8 +20,8 @@ IPAddress server(172,16,42,44);*/
 #include "wifi-credentials.h"
 #define port 8111
 
-static const char uuid[]  = "b9944342-b8c7-4ca6-9d3e-074eb4706264";
-static const char token[] = "6d1f0dd95bf0dc0beb64ab7252152de6a2c08583";
+static const char uuid[]  = "ff12c403-04c7-4e63-9073-2e3b1f8e4450";
+static const char token[] = "28d2c24dfa0a5289799a345e683d570880a3bc41";
 
 int status = WL_IDLE_STATUS;
 WiFiClient conn;
