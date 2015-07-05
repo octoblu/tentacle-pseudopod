@@ -10,6 +10,14 @@ Pseudopod::Pseudopod(Stream &input, Print &output, Tentacle& tentacle) {
   resetPinActions();
 }
 
+bool Pseudopod::shouldBroadcastPins() {
+  return broadcastPins;
+}
+
+int Pseudopod::getBroadcastInterval() {
+  return broadcastInterval;
+}
+
 void Pseudopod::resetPinActions() {
   for(int i = 0; i < tentacle->getNumPins(); i++) {
     messagePinActions[i] = Action_ignore;
@@ -80,6 +88,16 @@ TentacleMessageTopic Pseudopod::readMessage() {
   currentMessage.pins.arg = (void*) this;
 
   bool status = pb_decode_delimited(&pbInput, TentacleMessage_fields, &currentMessage);
+
+  if (currentMessage.topic == TentacleMessageTopic_config) {
+
+    if(currentMessage.has_broadcastPins) {
+      broadcastPins = currentMessage.broadcastPins;
+    }
+    if(currentMessage.has_broadcastInterval) {
+      broadcastInterval = currentMessage.broadcastInterval;
+    }
+  }
 
   return currentMessage.topic;
 }

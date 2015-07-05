@@ -12,6 +12,7 @@ Testing
 *.lo
 *.o
 *.obj
+*.hne
 
 # Precompiled Headers
 *.gch
