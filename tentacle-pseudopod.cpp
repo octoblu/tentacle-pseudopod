@@ -39,12 +39,6 @@ size_t Pseudopod::sendPins() {
   currentMessage.pins.funcs.encode = &Pseudopod::pinEncode;
   currentMessage.pins.arg = (void*)this;
 
-  currentMessage.has_broadcastPins = true;
-  currentMessage.broadcastPins = broadcastPins;
-
-  currentMessage.has_broadcastInterval = true;
-  currentMessage.broadcastInterval = broadcastInterval;
-
   bool status = pb_encode_delimited(&pbOutput, TentacleMessage_fields, &currentMessage);
 
   return pbOutput.bytes_written;

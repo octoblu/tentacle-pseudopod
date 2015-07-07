@@ -2,18 +2,25 @@
 #define TENTACLE_PSEUDOPOD_H
 
 extern "C" {
-#include "arduino-nanopb/pb_encode.h"
-#include "arduino-nanopb/pb_decode.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
 }
 
 #include <stddef.h>
 
-#include "arduino-nanopb/pb_arduino_encode.h"
-#include "arduino-nanopb/pb_arduino_decode.h"
+#include "pb_arduino_encode.h"
+#include "pb_arduino_decode.h"
 
-#include "tentacle/tentacle.h"
+#include "tentacle.h"
+#include <proto-buf.h>
+
+// Make library cross-compatiable
+// with Arduino, GNU C++ for tests, and Spark.
+#if defined(ARDUINO) && ARDUINO >= 100
 #include "Stream.h"
-#include "proto-buf.hpp"
+#elif defined(SPARK)
+#include "spark_wiring_stream.h"
+#endif
 
 #ifndef BROADCAST_INTERVAL_DEFAULT
 #define BROADCAST_INTERVAL_DEFAULT 2000
