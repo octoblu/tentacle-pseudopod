@@ -30,7 +30,8 @@ class Pseudopod {
     TentacleMessageTopic readMessage();
     int getBroadcastInterval();
     bool shouldBroadcastPins();
-
+    bool isConfigured();
+    size_t requestConfiguration();
     size_t authenticate(const char* uuid, const char *token);
     size_t registerDevice();
 
@@ -40,6 +41,7 @@ class Pseudopod {
     Tentacle* tentacle;
     Action* messagePinActions;
     bool broadcastPins = false;
+    bool configured = false;
     unsigned int broadcastInterval = BROADCAST_INTERVAL_DEFAULT;
     void resetPinActions();
     static void printPin(const Pin& pin);
