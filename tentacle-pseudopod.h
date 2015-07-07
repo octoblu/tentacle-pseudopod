@@ -12,7 +12,7 @@ extern "C" {
 #include "pb_arduino_decode.h"
 
 #include "tentacle.h"
-#include <proto-buf.h>
+#include "proto-buf.h"
 
 // Make library cross-compatiable
 // with Arduino, GNU C++ for tests, and Spark.
