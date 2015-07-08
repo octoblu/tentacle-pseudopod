@@ -1,1 +1,0 @@
-check out out the [tentacle-build](https://github.com/octoblu/tentacle-build) project for some great [examples](https://github.com/octoblu/tentacle-build/tree/master/examples) on how to use pseudopod!
