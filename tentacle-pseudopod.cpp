@@ -18,6 +18,10 @@ int Pseudopod::getBroadcastInterval() {
   return broadcastInterval;
 }
 
+bool Pseudopod::isConfigured() {
+  return configured;
+}
+
 void Pseudopod::resetPinActions() {
   for(int i = 0; i < tentacle->getNumPins(); i++) {
     messagePinActions[i] = Action_ignore;
@@ -76,6 +80,19 @@ size_t Pseudopod::authenticate(const char *uuid, const char *token) {
   return pbOutput.bytes_written;
 }
 
+size_t Pseudopod::requestConfiguration() {
+  pbOutput.bytes_written = 0;
+
+  currentMessage = {};
+
+  currentMessage.topic = TentacleMessageTopic_config;
+  currentMessage.has_topic = true;
+
+  bool status = pb_encode_delimited(&pbOutput, TentacleMessage_fields, &currentMessage);
+
+  return pbOutput.bytes_written;
+}
+
 size_t Pseudopod::registerDevice() {
   return 0;
 }
@@ -90,13 +107,9 @@ TentacleMessageTopic Pseudopod::readMessage() {
   bool status = pb_decode_delimited(&pbInput, TentacleMessage_fields, &currentMessage);
 
   if (currentMessage.topic == TentacleMessageTopic_config) {
-
-    if(currentMessage.has_broadcastPins) {
-      broadcastPins = currentMessage.broadcastPins;
-    }
-    if(currentMessage.has_broadcastInterval) {
-      broadcastInterval = currentMessage.broadcastInterval;
-    }
+    configured = true;
+    broadcastPins = currentMessage.broadcastPins;
+    broadcastInterval = currentMessage.broadcastInterval;
   }
 
   return currentMessage.topic;
@@ -132,7 +145,6 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
     if(!pb_encode_submessage(stream, Pin_fields, &pin)) {
       return false;
     }
-
   }
 
   return true;
