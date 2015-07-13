@@ -9,6 +9,6 @@ python ~/Projects/Octoblu/nanopb/generator/nanopb_generator.py tentacle-message.
 
 [ ! -d build ] && mkdir build
 cd build && \
-cmake  -Dtest=ON .. && \
+cmake .. && \
 make VERBOSE=1 && \
 ctest -VV
