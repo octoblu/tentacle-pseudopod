@@ -54,11 +54,11 @@ class Pseudopod {
 
     void resetPinActions();
 
+    static bool customDataDecode(pb_istream_t *stream, const pb_field_t *field, void **arg);
     static Action fromTentacleAction(Tentacle::Action action);
     static bool pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg);
     static bool pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
     static Tentacle::Action toTentacleAction(Action action);
-    // static void printPin(const Pin& pin);
 };
 
 #endif

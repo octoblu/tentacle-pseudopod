@@ -129,6 +129,18 @@ void Pseudopod::resetPinActions() {
   }
 }
 
+bool Pseudopod::customDataDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+  uint64_t charInt;
+
+  if(!pb_decode_varint(stream, &charInt)){
+    return false;
+  }
+
+  char character = charInt & 0xff;
+
+  return true;
+}
+
 Action fromTentacleAction(Tentacle::Action tentacleAction) {
   switch (tentacleAction) {
     case Tentacle::Action_analogRead:
