@@ -36,6 +36,7 @@ linkExternalProject(tentacle-pseudopod "arduino-nanopb")
 linkExternalProject(tentacle-pseudopod "tentacle")
 
 option(test "Build all tests." OFF)
+add_definitions(-DARDUINO=101)
 
 if (test)
   enable_testing()

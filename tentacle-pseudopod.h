@@ -30,35 +30,35 @@ class Pseudopod {
   public:
     Pseudopod(Stream& input, Print& output, Tentacle& tentacle);
 
+    size_t authenticate(const char* uuid, const char *token);
+    int getBroadcastInterval();
+    bool isConfigured();
+    bool isConnected();
+    TentacleMessageTopic readMessage();
+    size_t registerDevice();
+    size_t requestConfiguration();
+    bool shouldBroadcastPins();
     size_t sendConfiguredPins();
-    size_t sendPins(Action* pinActions);
+    size_t sendPins(Tentacle::Action* pinActions);
     size_t sendPins();
 
-    TentacleMessageTopic readMessage();
-    int getBroadcastInterval();
-    bool shouldBroadcastPins();
-    bool isConfigured();
-    size_t requestConfiguration();
-    size_t authenticate(const char* uuid, const char *token);
-    size_t registerDevice();
-
-    bool isConnected();
-
    private:
+    unsigned int broadcastInterval;
+    bool broadcastPins;
+    bool configured;
+    TentacleMessage currentMessage;
+    Action* messagePinActions;
     pb_ostream_t pbOutput;
     pb_istream_t pbInput;
     Tentacle* tentacle;
-    Action* messagePinActions;
-    bool broadcastPins = false;
-    bool configured = false;
-    unsigned int broadcastInterval = BROADCAST_INTERVAL_DEFAULT;
+
     void resetPinActions();
-    static void printPin(const Pin& pin);
 
-    TentacleMessage currentMessage;
-
-    static bool pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
+    static Action fromTentacleAction(Tentacle::Action action);
     static bool pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg);
+    static bool pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
+    static Tentacle::Action toTentacleAction(Action action);
+    // static void printPin(const Pin& pin);
 };
 
 #endif

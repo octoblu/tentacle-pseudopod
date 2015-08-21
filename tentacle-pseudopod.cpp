@@ -2,6 +2,10 @@
 #include <stddef.h>
 
 Pseudopod::Pseudopod(Stream &input, Print &output, Tentacle& tentacle) {
+  broadcastPins = false;
+  configured = false;
+  broadcastInterval = BROADCAST_INTERVAL_DEFAULT;
+
   pb_ostream_from_stream(output, pbOutput);
   pb_istream_from_stream(input, pbInput);
 
@@ -10,62 +14,11 @@ Pseudopod::Pseudopod(Stream &input, Print &output, Tentacle& tentacle) {
   resetPinActions();
 }
 
-bool Pseudopod::shouldBroadcastPins() {
-  return broadcastPins;
-}
-
-int Pseudopod::getBroadcastInterval() {
-  return broadcastInterval;
-}
-
-bool Pseudopod::isConfigured() {
-  return configured;
-}
-
-void Pseudopod::resetPinActions() {
-  for(int i = 0; i < tentacle->getNumPins(); i++) {
-    messagePinActions[i] = Action_ignore;
-  }
-}
-
-size_t Pseudopod::sendPins() {
-  pbOutput.bytes_written = 0;
-
-  currentMessage = {};
-  currentMessage.topic = TentacleMessageTopic_action;
-  currentMessage.has_topic = true;
-  currentMessage.response = true;
-  currentMessage.has_response = true;
-  currentMessage.pins.funcs.encode = &Pseudopod::pinEncode;
-  currentMessage.pins.arg = (void*)this;
-
-  bool status = pb_encode_delimited(&pbOutput, TentacleMessage_fields, &currentMessage);
-
-  return pbOutput.bytes_written;
-}
-
-size_t Pseudopod::sendPins(Action* actions) {
-  resetPinActions();
-
-  for(int i = 0; i < tentacle->getNumPins(); i++) {
-    messagePinActions[i] = actions[i];
-  }
-
-  return sendPins();
-}
-
-size_t Pseudopod::sendConfiguredPins() {
-  return sendPins(tentacle->getConfiguredPinActions());
-}
-
 size_t Pseudopod::authenticate(const char *uuid, const char *token) {
   pbOutput.bytes_written = 0;
 
-  currentMessage = {};
-
   currentMessage.topic = TentacleMessageTopic_authentication;
   currentMessage.has_topic = true;
-  currentMessage.authentication = {};
   currentMessage.has_authentication = true;
 
   strncpy(currentMessage.authentication.uuid, uuid, 36);
@@ -80,27 +33,16 @@ size_t Pseudopod::authenticate(const char *uuid, const char *token) {
   return pbOutput.bytes_written;
 }
 
-size_t Pseudopod::requestConfiguration() {
-  pbOutput.bytes_written = 0;
-
-  currentMessage = {};
-
-  currentMessage.topic = TentacleMessageTopic_config;
-  currentMessage.has_topic = true;
-
-  bool status = pb_encode_delimited(&pbOutput, TentacleMessage_fields, &currentMessage);
-
-  return pbOutput.bytes_written;
+int Pseudopod::getBroadcastInterval() {
+  return broadcastInterval;
 }
 
-size_t Pseudopod::registerDevice() {
-  return 0;
+bool Pseudopod::isConfigured() {
+  return configured;
 }
 
 bool Pseudopod::isConnected() {
   pbOutput.bytes_written = 0;
-
-  currentMessage = {};
 
   currentMessage.topic = TentacleMessageTopic_ping;
   currentMessage.has_topic = true;
@@ -113,7 +55,6 @@ bool Pseudopod::isConnected() {
 TentacleMessageTopic Pseudopod::readMessage() {
   resetPinActions();
 
-  currentMessage = {};
   currentMessage.pins.funcs.decode = &Pseudopod::pinDecode;
   currentMessage.pins.arg = (void*) this;
 
@@ -121,7 +62,7 @@ TentacleMessageTopic Pseudopod::readMessage() {
 
   if (currentMessage.topic == TentacleMessageTopic_config) {
     for(int i = 0; i < tentacle->getNumPins(); i++) {
-        tentacle->configurePin(i, messagePinActions[i]);
+        tentacle->configurePin(i, toTentacleAction(messagePinActions[i]));
     }
 
     configured = true;
@@ -130,6 +71,105 @@ TentacleMessageTopic Pseudopod::readMessage() {
   }
 
   return currentMessage.topic;
+}
+
+size_t Pseudopod::registerDevice() {
+  return 0;
+}
+
+size_t Pseudopod::requestConfiguration() {
+  pbOutput.bytes_written = 0;
+
+  currentMessage.topic = TentacleMessageTopic_config;
+  currentMessage.has_topic = true;
+
+  bool status = pb_encode_delimited(&pbOutput, TentacleMessage_fields, &currentMessage);
+
+  return pbOutput.bytes_written;
+}
+
+bool Pseudopod::shouldBroadcastPins() {
+  return broadcastPins;
+}
+
+size_t Pseudopod::sendConfiguredPins() {
+  return sendPins(tentacle->getConfiguredPinActions());
+}
+
+size_t Pseudopod::sendPins() {
+  pbOutput.bytes_written = 0;
+
+  currentMessage.topic = TentacleMessageTopic_action;
+  currentMessage.has_topic = true;
+  currentMessage.response = true;
+  currentMessage.has_response = true;
+  currentMessage.pins.funcs.encode = &Pseudopod::pinEncode;
+  currentMessage.pins.arg = (void*)this;
+
+  bool status = pb_encode_delimited(&pbOutput, TentacleMessage_fields, &currentMessage);
+
+  return pbOutput.bytes_written;
+}
+
+size_t Pseudopod::sendPins(Tentacle::Action* actions) {
+  resetPinActions();
+
+  for(int i = 0; i < tentacle->getNumPins(); i++) {
+    messagePinActions[i] = fromTentacleAction(actions[i]);
+  }
+
+  return sendPins();
+}
+
+// Private
+
+void Pseudopod::resetPinActions() {
+  for(int i = 0; i < tentacle->getNumPins(); i++) {
+    messagePinActions[i] = Action_ignore;
+  }
+}
+
+Action fromTentacleAction(Tentacle::Action tentacleAction) {
+  switch (tentacleAction) {
+    case Tentacle::Action_analogRead:
+      return Action_analogRead;
+    case Tentacle::Action_analogReadPullup:
+      return Action_analogReadPullup;
+    case Tentacle::Action_analogWrite:
+      return Action_analogWrite;
+    case Tentacle::Action_digitalRead:
+      return Action_digitalRead;
+    case Tentacle::Action_digitalReadPullup:
+      return Action_digitalReadPullup;
+    case Tentacle::Action_digitalWrite:
+      return Action_digitalWrite;
+    case Tentacle::Action_ignore:
+      return Action_ignore;
+    case Tentacle::Action_pwmWrite:
+      return Action_pwmWrite;
+    case Tentacle::Action_servoWrite:
+      return Action_servoWrite;
+    default:
+      return Action_ignore;
+  }
+}
+
+bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+  Pseudopod *pseudopod = (Pseudopod*) *arg;
+  Pin pin;
+
+  if (!pb_decode(stream, Pin_fields, &pin)) {
+    return false;
+  }
+
+  TentacleMessage& message = pseudopod->currentMessage;
+  pseudopod->messagePinActions[pin.number] = pin.action;
+
+  if(message.topic == TentacleMessageTopic_action) {
+    pseudopod->tentacle->processPin(pin.number, pin.value);
+  }
+
+  return true;
 }
 
 bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
@@ -143,7 +183,6 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
       continue;
     }
 
-    pin = {};
     pin.has_action = true;
     pin.action = action;
     pin.has_number = true;
@@ -167,21 +206,27 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
   return true;
 }
 
-
-bool Pseudopod::pinDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  Pseudopod *pseudopod = (Pseudopod*) *arg;
-  Pin pin = {};
-
-  if (!pb_decode(stream, Pin_fields, &pin)) {
-    return false;
+Tentacle::Action toTentacleAction(Action action) {
+  switch (action) {
+    case Action_analogRead:
+      return Tentacle::Action_analogRead;
+    case Action_analogReadPullup:
+      return Tentacle::Action_analogReadPullup;
+    case Action_analogWrite:
+      return Tentacle::Action_analogWrite;
+    case Action_digitalRead:
+      return Tentacle::Action_digitalRead;
+    case Action_digitalReadPullup:
+      return Tentacle::Action_digitalReadPullup;
+    case Action_digitalWrite:
+      return Tentacle::Action_digitalWrite;
+    case Action_ignore:
+      return Tentacle::Action_ignore;
+    case Action_pwmWrite:
+      return Tentacle::Action_pwmWrite;
+    case Action_servoWrite:
+      return Tentacle::Action_servoWrite;
+    default:
+      return Tentacle::Action_ignore;
   }
-
-  TentacleMessage& message = pseudopod->currentMessage;
-  pseudopod->messagePinActions[pin.number] = pin.action;
-
-  if(message.topic == TentacleMessageTopic_action) {
-    pseudopod->tentacle->processPin(pin.number, pin.value);
-  }
-
-  return true;
 }
