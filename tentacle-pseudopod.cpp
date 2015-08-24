@@ -17,6 +17,7 @@ Pseudopod::Pseudopod(Stream &input, Print &output, Tentacle& tentacle) {
 size_t Pseudopod::authenticate(const char *uuid, const char *token) {
   pbOutput.bytes_written = 0;
 
+  memset(&currentMessage, 0, sizeof(currentMessage));
   currentMessage.topic = TentacleMessageTopic_authentication;
   currentMessage.has_topic = true;
   currentMessage.has_authentication = true;
@@ -44,6 +45,7 @@ bool Pseudopod::isConfigured() {
 bool Pseudopod::isConnected() {
   pbOutput.bytes_written = 0;
 
+  memset(&currentMessage, 0, sizeof(currentMessage));
   currentMessage.topic = TentacleMessageTopic_ping;
   currentMessage.has_topic = true;
 
@@ -55,6 +57,7 @@ bool Pseudopod::isConnected() {
 TentacleMessageTopic Pseudopod::readMessage() {
   resetPinActions();
 
+  memset(&currentMessage, 0, sizeof(currentMessage));
   currentMessage.pins.funcs.decode = &Pseudopod::pinDecode;
   currentMessage.pins.arg = (void*) this;
 
@@ -80,6 +83,7 @@ size_t Pseudopod::registerDevice() {
 size_t Pseudopod::requestConfiguration() {
   pbOutput.bytes_written = 0;
 
+  memset(&currentMessage, 0, sizeof(currentMessage));
   currentMessage.topic = TentacleMessageTopic_config;
   currentMessage.has_topic = true;
 
@@ -99,6 +103,7 @@ size_t Pseudopod::sendConfiguredPins() {
 size_t Pseudopod::sendPins() {
   pbOutput.bytes_written = 0;
 
+  memset(&currentMessage, 0, sizeof(currentMessage));
   currentMessage.topic = TentacleMessageTopic_action;
   currentMessage.has_topic = true;
   currentMessage.response = true;
@@ -111,11 +116,11 @@ size_t Pseudopod::sendPins() {
   return pbOutput.bytes_written;
 }
 
-size_t Pseudopod::sendPins(Tentacle::Action* actions) {
+size_t Pseudopod::sendPins(Tentacle::Action* tentacleActions) {
   resetPinActions();
 
   for(int i = 0; i < tentacle->getNumPins(); i++) {
-    messagePinActions[i] = fromTentacleAction(actions[i]);
+    messagePinActions[i] = fromTentacleAction(tentacleActions[i]);
   }
 
   return sendPins();
@@ -130,18 +135,20 @@ void Pseudopod::resetPinActions() {
 }
 
 bool Pseudopod::customDataDecode(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  uint64_t charInt;
+  // uint64_t charInt;
+  //
+  // if(!pb_decode_varint(stream, &charInt)){
+  //   return false;
+  // }
 
-  if(!pb_decode_varint(stream, &charInt)){
-    return false;
-  }
+  // char character = (char) charInt;
 
-  char character = charInt & 0xff;
+  // Serial.println("customDataDecode: " + character);
 
   return true;
 }
 
-Action fromTentacleAction(Tentacle::Action tentacleAction) {
+Action Pseudopod::fromTentacleAction(Tentacle::Action tentacleAction) {
   switch (tentacleAction) {
     case Tentacle::Action_analogRead:
       return Action_analogRead;
@@ -218,7 +225,7 @@ bool Pseudopod::pinEncode(pb_ostream_t *stream, const pb_field_t *field, void * 
   return true;
 }
 
-Tentacle::Action toTentacleAction(Action action) {
+Tentacle::Action Pseudopod::toTentacleAction(Action action) {
   switch (action) {
     case Action_analogRead:
       return Tentacle::Action_analogRead;
